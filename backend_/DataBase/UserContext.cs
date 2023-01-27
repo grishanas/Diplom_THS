@@ -1,16 +1,23 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.Data.SqlClient;
 using backend_.model;
+using backend_;
 
 namespace backend_.DataBase
 {
-    public class UserContext: DbContext
+    public class UserContext
     {
-        public DbSet<Users> Users { get; set; }
 
-        public UserContext(DbContextOptions<UserContext> options) : base(options)
+     
+        public UserContext()
         {
-            Database.EnsureCreated();
+               
+
         }
 
+        public UserAndRole GetUsers()
+        {
+            throw new Exception("this modul doesn't realizet");
+            return new UserAndRole();
+        }
     }
 }
