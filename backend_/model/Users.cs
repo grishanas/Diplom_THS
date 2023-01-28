@@ -18,8 +18,8 @@
         public int ur_id { get; set; }
          public string? ur_description { get; set; }
     }
-
-    public class UserAndRole
+ 
+    public class UsersAndRole
     {
         public int ur_id { get; set; }
         public int u_id { get; set; }
