@@ -3,9 +3,9 @@ using System.Net.Sockets;
 
 namespace backend_.Connection.ControllerConnection.OmronController.TransportLayer
 {
-    public class TCPClient
+    public class TCPClient:IControllerConnect
     {
-        public IPEndPoint _iPEndPoint { get; }
+        public IPEndPoint _iPEndPoint { get; private set; }
         private TcpClient client;
         public int bufferSize 
         {
@@ -32,11 +32,9 @@ namespace backend_.Connection.ControllerConnection.OmronController.TransportLaye
             _iPEndPoint = new IPEndPoint(0, 0);
         }
 
-        public void SetIpEndPoint(IPAddress ip,int port)
+        public void SetIpAddress(string ipAddress, int port)
         {
-            _iPEndPoint.Address = ip;
-            _iPEndPoint.Port = port;
-
+            this._iPEndPoint = new IPEndPoint(IPAddress.Parse(ipAddress), port);
         }
 
         public void Disconect()
@@ -81,11 +79,11 @@ namespace backend_.Connection.ControllerConnection.OmronController.TransportLaye
             return responce;
         }
 
-        public async Task WriteData(byte[] buffer,int bufferSize)
+        public async Task WriteData(byte[] buffer,int length)
         {
             using(var networkStream = client.GetStream())
             {
-                await networkStream.WriteAsync(buffer, 0, buffer.Length);
+                await networkStream.WriteAsync(buffer, 0, length);
             }
 
         }

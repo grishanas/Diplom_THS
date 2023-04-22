@@ -1,90 +1,46 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using backend_.model;
-using System.Security.Claims;
-using System.IdentityModel.Tokens.Jwt;
-using Microsoft.AspNetCore.Authorization;
-using System.Text;
-using System.IdentityModel.Tokens;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using backend_.AuthorizationLogic;
+using backend_.Models.UserModels;
+using backend_.DataBase.UserDB;
 
 namespace backend_.Controllers.Authorization
 {
-
-    [Route("/[controller]")]
+    [Route("api/[controller]")]
     [ApiController]
     public class AuthorizationController : ControllerBase
     {
+        private readonly backend_.AuthorizationLogic.Authorization authorization;
+        private readonly UserDBContext _dbContezxt;
 
-        private readonly IConfiguration _configuration;
-
-        public AuthorizationController(IConfiguration configuration)
+        public AuthorizationController(UserDBContext dbContezxt)
         {
-            _configuration=configuration;
-        }
-        /// <summary>
-        /// call to the database controller, if controller return null then this user does not exist
-        /// </summary>
-        /// <returns></returns>
-        /// 
-        private UsersAndRole GetUsersAndRoles(UserLogin userLogin)
-        {
-            var _users = new UsersAndRole();
-            _users.UserRoles = new List<UserRole>();
-            var tm= new UserRole();
-            tm.ur_description = "dsa";
-            _users.UserRoles.Add(tm);
-
-            tm = new UserRole();
-            tm.ur_description = "sa";
-            _users.UserRoles.Add(tm);
-
-            if (_users == null)
-                throw new Exception();
-
-            return _users;
+            this.authorization = new AuthorizationLogic.Authorization(dbContezxt);
+            _dbContezxt = dbContezxt;
         }
 
-        private string? GenerateJwtToken(UsersAndRole user)
+        [HttpPost("Login")]
+        public async Task<IResult> LogIn([FromBody] UserLogin userLogin)
         {
-            string encodedJWT;
             try
             {
-                var claims = new List<Claim>
-                {
-                new Claim(ClaimTypes.Name,user.Users[0].u_login)
-                };
-                user.UserRoles.ForEach((role) => { claims.Add(new Claim(ClaimTypes.Role, role.ur_description)); });
-
-                var jwt = new JwtSecurityToken(claims: claims, expires: DateTime.UtcNow.AddHours(1));
-                encodedJWT = new JwtSecurityTokenHandler().WriteToken(jwt);
+                var user = await this.authorization.UserAuthentication(userLogin);
+                return Results.Ok();
             }
             catch(Exception e)
             {
-                throw e;
-            };
-
-            return encodedJWT!=null ? encodedJWT.ToString(): throw new Exception();
+                Response.StatusCode = 400;
+                return Results.Problem();
+            }
         }
 
-
-        [HttpPost("/login")]
-        [AllowAnonymous]
-        public IResult GenToken([FromBody] UserLogin userLogin)
+        [HttpOptions("Login")]
+        public async Task<IResult> LogOption()
         {
-
-            UsersAndRole User = new UsersAndRole();
-            try
-            {
-                User = GetUsersAndRoles(userLogin);
-            }
-            catch (Exception E)
-            {
-                return Results.Unauthorized();
-            }
-
-            GenerateJwtToken(User);
-            return Results.Ok();
-
+            var head = Request.Headers;
+           
+            return Results.Problem();
+            
         }
-
     }
 }

@@ -2,21 +2,58 @@
 
 namespace backend_.Connection.ControllerConnection.OmronController.FinsCmd
 {
-	public class FinsComand : IOutputListener
+	public class FinsComand : IControllerCommandImplementation
 	{
-		private event Command Answer;
+        #region
+        private event Command Answer;
 		private event Command Errore;
 		public void SetAnswerListener(Command Delegate)
-        {
+		{
 			Answer += Delegate;
 		}
 		public void DeleteAnswerListener(Command Delegate)
-        {
+		{
 			Answer -= Delegate;
 		}
 
+
+		/// <summary>
+		/// не реализовано, здесь осуществляется настройка команды для опроса
+		/// </summary>
+		/// <param name="comand"></param>
+		public FinsComand(byte[] comand)
+		{
+
+		}
+		public FinsComand()
+		{
+
+		}
+
+		public void SetCommand(string comand)
+		{
+
+		}
+
+		private static Dictionary<string, string> allowedCommand = new Dictionary<string, string>()
+        {
+            {
+				"0101", "some description"
+			},
+        };
+
+		public Dictionary<string,string> GetAllowedCommand()
+        {
+			return allowedCommand;
+        }
+
+		public void SetTransportLaeyr(TCPClient client)
+        {
+			Transport = client;
+        }
+
 		private string _lastError = "";
-		public TCPClient Transport;
+		private TCPClient Transport;
 		Byte[] cmdFins = new Byte[]
 		{
 			//---- COMMAND HEADER -------------------------------------------------------
@@ -187,13 +224,11 @@ namespace backend_.Connection.ControllerConnection.OmronController.FinsCmd
 				return (UInt16)(ResponseHeader[6] << 8 + ResponseHeader[7] & 0xff);
 			}
 		}
-
-
-
+        #endregion
 
         #region FinsComand
 
-        public void MemoryAreaRead(MemoryArea memoryArea,UInt16 StartAddress,UInt16 Count, byte? StartBitPosition)
+        public void MemoryAreaRead(MemoryArea memoryArea,UInt16 StartAddress,UInt16 Count, byte? StartBitPosition, byte[]? data)
         {
 			this.Comand = (UInt16)FinsComandCode.MemoryAreaRead;
 
@@ -224,7 +259,16 @@ namespace backend_.Connection.ControllerConnection.OmronController.FinsCmd
 
         #region DataSend
 
-        protected async Task<bool> ConnectToPLC()
+		public void ConnectToPLC(FinsComand fins)
+        {
+
+			this.SA1 = fins.SA1;
+			this.DA1 = fins.DA1;
+
+		}
+
+
+		public async Task<bool> ConnectToPLC()
         {
 			byte[] cmdNADS = new byte[]
 			{
@@ -271,7 +315,7 @@ namespace backend_.Connection.ControllerConnection.OmronController.FinsCmd
 
 		}
 
-		public async Task<bool> Call()
+		public async Task<bool> ExecuteCommand()
         {
 			return await SendFrames(null);
 

@@ -1,40 +1,50 @@
-import { Toolbar,Box,Stack,CssBaseline,AppBar,Typography } from "@mui/material";
+import { Toolbar,Box,Stack,CssBaseline,AppBar, IconButton, Drawer, List, ListItem, ListItemButton, ListItemIcon, ListItemText, Divider } from "@mui/material";
 import React from "react";
 import { Link } from "react-router-dom";
+import MenuIcon from '@mui/icons-material/Menu';
+import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 
 
-const Headers= [{url:"/AddController",value:"A"},{url:"B",value:"B"},{url:"C",value:"C"}];
+import InboxIcon from '@mui/icons-material/MoveToInbox';
+import MailIcon from '@mui/icons-material/Mail';
+
 
 export default class Header extends React.Component
 {
 
+    toggleDrawer(event,value)
+    {
+        if (event.type === 'keydown' && (event.key === 'Tab' || event.key === 'Shift'))
+            return;
+        this.setState({menuIsOpen:value})
+    }
+
+
     constructor(props)
     {
         super(props)
-        this.state={navigationMenu:Headers};
+        this.state={menuIsOpen:false};
     }
+
+
 
     render()
     {
 
-        return (
-            
+        return ( 
         <Box sx={{ display: 'flex' }}>
             <CssBaseline/>
-            <AppBar position="fixed" sx={{ zIndex: (theme) => theme.zIndex.drawer + 1 }}>
+            <AppBar position="fixed" >
                 <Toolbar>
-                    <Box sx={{ display: { xs: 'none', sm: 'block' }}}>
-                        <Link to="/" style={{ color:'#ff22f2',
-                            textDecoration:'none',
-                        }}>
-                        <Typography >
-                            Главная
-                         </Typography>
-                        </Link>  
-                    </Box>
+                        <IconButton 
+                        edge='start'
+                        onClick={e=>this.toggleDrawer(e,true)}
+                        >
+                            <MenuIcon/>
+                        </IconButton>
                     <Stack margin='auto' direction='row' spacing={2} >
-                        {(this.state.navigationMenu)?
-                        this.state.navigationMenu.map((item,index)=>(
+                        {(this.props.navigationMenu)?
+                        this.props.navigationMenu.map((item,index)=>(
                             
                         <Link
                             to={item.url}
@@ -45,10 +55,30 @@ export default class Header extends React.Component
                     )):null}
                     </Stack>
                 </Toolbar>
-            </AppBar>
-        </Box>
-
-            
-        )
+                </AppBar>
+                <Drawer
+                    anchor="left"
+                    open={this.state.menuIsOpen}
+                    onClose={(e)=>this.toggleDrawer(e,false)}>
+                        <IconButton onClick={(e)=>this.toggleDrawer(e,false)}>
+                            <ChevronLeftIcon/>
+                        </IconButton>
+                    <Divider/>
+                    <List>
+                        {this.props.dropMenu.map((item)=>(
+                            <ListItem>
+                                <Link to={item.url}  style={{textDecoration:'none'}}>
+                                <ListItemButton>
+                                    <ListItemText>
+                                        {item.value}
+                                    </ListItemText>
+                                </ListItemButton>
+                                </Link>
+                            </ListItem>
+                        ))}
+                    </List> 
+                </Drawer> 
+                
+        </Box>);
     }
 }
