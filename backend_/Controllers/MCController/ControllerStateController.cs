@@ -9,21 +9,20 @@ namespace backend_.Controllers.MCController
     [ApiController]
     public class ControllerStateController : ControllerBase
     {
+        private readonly ControllerDBContext _dbContext;
 
-        private readonly ControllerStateDBContext _dbContext;
-
-        public ControllerStateController(ControllerStateDBContext dbContext)
+        public ControllerStateController(ControllerDBContext dbContext)
         {
             _dbContext = dbContext;
         }
 
 
         [HttpGet("GetAll")]
-        public async Task<IResult> GetAllControllers()
+        public async Task<IResult> GetAllControllersState()
         {
             try
             {
-                return Results.Json(_dbContext._context.ToList());
+                return Results.Json(_dbContext.controllerStates.ToList());
             }
             catch (Exception e)
             {
@@ -32,7 +31,7 @@ namespace backend_.Controllers.MCController
         }
 
         [HttpGet("GetController/{id}")]
-        public async Task<IResult> GetController([FromRoute] int id)
+        public async Task<IResult> GetControllerState([FromRoute] int id)
         {
             try
             {
@@ -46,12 +45,17 @@ namespace backend_.Controllers.MCController
         }
 
 
-        [HttpPost("AddController")]
-        public async Task<IResult> AddController([FromBody] string controller)
+        public class UserControllerState
+        {
+            public string description { get; set; }
+        }
+
+        [HttpPost("Add")]
+        public async Task<IResult> AddControllerState([FromBody] UserControllerState controller)
         {
             try
             {
-                var result = await _dbContext.AddState(controller);
+                var result = await _dbContext.AddState(controller.description);
                 if (result)
                     return Results.Ok();
                 else
@@ -64,7 +68,7 @@ namespace backend_.Controllers.MCController
         }
 
         [HttpDelete("DeleteController/{id}")]
-        public async Task<IResult> DeleteController([FromRoute] int id)
+        public async Task<IResult> DeleteControllerState([FromRoute] int id)
         {
             try
             {

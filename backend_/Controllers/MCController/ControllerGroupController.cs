@@ -44,7 +44,7 @@ namespace backend_.Controllers.MCController
         }
 
         [HttpPost("Add")]
-        public async Task<IResult> Add([FromBody] ControllerGroup controllerGroup)
+        public async Task<IResult> Add([FromBody] ControllerGroupUser controllerGroup)
         {
             try
             {

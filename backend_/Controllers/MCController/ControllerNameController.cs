@@ -9,9 +9,9 @@ namespace backend_.Controllers.MCController
     [ApiController]
     public class ControllerNameController : ControllerBase
     {
-        private readonly ControllerNameDBContext _dbContext;
+        private readonly ControllerDBContext _dbContext;
 
-        public ControllerNameController(ControllerNameDBContext dbContext)
+        public ControllerNameController(ControllerDBContext dbContext)
         {
             _dbContext = dbContext;
         }
@@ -22,7 +22,7 @@ namespace backend_.Controllers.MCController
         {
             try
             {
-                return Results.Json(_dbContext._context.ToList());
+                return Results.Json(_dbContext.controllersName.ToList());
             }
             catch (Exception e)
             {
@@ -35,7 +35,7 @@ namespace backend_.Controllers.MCController
         {
             try
             {
-                return Results.Json(await _dbContext.Get(id));
+                return Results.Json(await _dbContext.GetControllerName(id));
             }
             catch (Exception e)
             {
@@ -56,7 +56,7 @@ namespace backend_.Controllers.MCController
         {
             try
             {
-                var result = await _dbContext.Add(nameAndVersion.name, nameAndVersion.version);
+                var result = await _dbContext.AddControllerName(nameAndVersion.name, nameAndVersion.version);
                 if (result)
                     return Results.Ok();
                 else
@@ -73,12 +73,12 @@ namespace backend_.Controllers.MCController
         {
             try
             {
-                await _dbContext.Delete(id);
+                await _dbContext.DeleteControllerName(id);
                 return Results.Ok();
             }
             catch (Exception e)
             {
-                return Results.Problem();
+                return Results.Problem(e.Message);
             }
         }
     }

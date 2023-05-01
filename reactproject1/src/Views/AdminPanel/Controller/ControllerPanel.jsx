@@ -1,9 +1,9 @@
 import { AgGridReact } from "@ag-grid-community/react";
 import { Card, Typography,Grid, Paper, Box, FormControl, FormLabel, InputLabel, Input, Select, Button } from "@mui/material";
 import React, { Component } from "react";
-import PopUpWindow from "./PopUpWindow";
+import PopUpWindow from "../PopUpWindow";
 import axios from "axios";
-import { BaseUrl } from "../../App";
+import { BaseUrl } from "../../../App";
 
 
 class Render extends React.Component{
@@ -39,7 +39,7 @@ export default class ControllerPanel extends React.Component
                     'PopUp':[]
                 }},
                 { field: 'id',
-                headerName:"ID",
+                headerName:"IPV4",
                 cellRenderer:Render
                 },
                 {
@@ -66,6 +66,30 @@ export default class ControllerPanel extends React.Component
 
     }
 
+
+    IPV4toInt(ip)
+    {
+        let parts=ip.split(".");
+        let res=0;
+
+        if(parts.length!=3)
+            return null;
+        res += parseInt(parts[0], 10) << 24;
+        res += parseInt(parts[1], 10) << 16;
+        res += parseInt(parts[2], 10) << 8;
+        res += parseInt(parts[3], 10);
+
+        return res;
+    }
+
+    IntToIPV4(int)
+    {
+        let part1=int&255;
+        let part2=(int>>8)&255;
+        let part3=(int>>16)&255;
+        let part4=(int>>24)&255;
+        return part4.toString()+"."+part3.toString()+"."+part2.toString()+"."+part1.toString();
+    }
     async GetController()
     {
         this.state.Request.get("/api/Controller/GetAll").then((e)=>{
@@ -75,7 +99,7 @@ export default class ControllerPanel extends React.Component
                     let data =[];
                     e.data.value.forEach((element)=>{
                         let tmp = {};
-                        tmp.id=element.id;
+                        tmp.id=this.IntToIPV4(element.ipAddress);
                         tmp.description=element.description;
                         data.push(tmp);
                     })
@@ -93,8 +117,7 @@ export default class ControllerPanel extends React.Component
 
     render()
     {
-        console.log("dsa");
-        return <duv>
+        return <div>
             <Grid
             height="100%"
             width="100%"
@@ -103,41 +126,33 @@ export default class ControllerPanel extends React.Component
             justifyContent="center"
             alignItems="stretch">
                 <Grid item>
-                    <Card>
-                        <Grid container display={"flex"} flexDirection={"column"}>
-                            <Grid item>
-                                <Typography textAlign={"center"}>Контроллеры</Typography>
-                            </Grid>
-                            <Grid item>
-                                <div className="ag-theme-alpine" style={{ height: 400, width: "100%" }}>
-                                <AgGridReact
-                                    columnDefs={this.state.columnDefs}
-                                    defaultColDef={this.state.defaultColDef}
-                                    autoGroupColumnDef={this.state.autoGroupColumnDef}
-                                    animateRows={true}
-                                    rowData={this.state.readyData}
-                                    onGridReady={(e)=>{this.GetController()}}
-                                />
-                                </div>
-                            </Grid>
-                        </Grid>
-                    </Card>
+                    <Typography textAlign={"center"}>
+                        Контроллеры
+                    </Typography>
+                    <Grid item>
+                        <div className="ag-theme-alpine" style={{ height: 400, width: "100%" }}>
+                            <AgGridReact
+                                columnDefs={this.state.columnDefs}
+                                defaultColDef={this.state.defaultColDef}
+                                autoGroupColumnDef={this.state.autoGroupColumnDef}
+                                animateRows={true}
+                                rowData={this.state.readyData}
+                                onGridReady={(e)=>{this.GetController()}}
+                            />
+                        </div>
+                     </Grid>
                 </Grid>
-                <Grid item>
-                    <Paper>
-                        <Grid container>
-                            <Grid item>
-                                <Card>
+                <Grid item width={"100%"} >
+                    <Card>
                                 <Box  
+                                    style={{margin:"0 auto"}}
                                     display={"flex"} 
                                     component="form"
-                                    margin={'0 auto'}
                                     flexDirection="column"
                                     justifyContent="center"
                                     alignItems="center"
                                     width={"400px"}
-                                    border={"1px solid #000"}
-                                >
+                                    border={"1px solid #000"}>
                                     <FormLabel>
                                         Добавить контроллер
                                     </FormLabel>
@@ -166,14 +181,11 @@ export default class ControllerPanel extends React.Component
                                             
                                         </Button>
                                     </FormControl>
-                                 </Box>
-                                </Card>
-                            </Grid>
-                        </Grid>
-                    </Paper>
+                        </Box>
+                    </Card>
                 </Grid>
 
             </Grid>
-        </duv>
+        </div>
     }
 }

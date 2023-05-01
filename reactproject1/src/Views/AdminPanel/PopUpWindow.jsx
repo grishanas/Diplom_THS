@@ -10,18 +10,10 @@ export default class PopUpWindow extends React.Component{
     constructor(props)
     {
         super(props)
+        console.log(props);
         this.state={hide:false,setAnchorEl:null,visible:false}
 
         
-    }
-
-    PopUpWindowContent()
-    {
-
-        return <div>
-
-        </div>
-
     }
 
     Open(e)
@@ -51,9 +43,9 @@ export default class PopUpWindow extends React.Component{
                 horizontal: "left",
             }}
         >
-            {this.props.PopUp.map((item)=> {return item(this.props?this.props.data.id:undefined,
-                this.props.context?this.props.context.GetRoles:undefined,
-                this.props.context?this.props.context.GetUser:undefined)} )}
+            {this.props.PopUp.map((item)=> {return item(
+                this.props?this.props.data.id:undefined,
+                this.props.context?this.props.context:undefined)} )}
         </Popover>    
         </div>
 

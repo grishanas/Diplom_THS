@@ -37,6 +37,11 @@ namespace backend_.Connection.ControllerConnection.OmronController.TransportLaye
             this._iPEndPoint = new IPEndPoint(IPAddress.Parse(ipAddress), port);
         }
 
+        public void SetIpAddress(UInt32 ipAddress, int port)
+        {
+            this._iPEndPoint = new IPEndPoint(new IPAddress(ipAddress), port);
+        }
+
         public void Disconect()
         {
             client.Close();

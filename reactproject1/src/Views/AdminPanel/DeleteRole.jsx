@@ -8,7 +8,6 @@ export default class DeleteUserRole extends React.Component{
     constructor(props)
     {
         super(props);
-        console.log(props);
         this.state={visible:false,Request:null}
 
         this.state.Request= axios.create({
@@ -44,7 +43,6 @@ export default class DeleteUserRole extends React.Component{
                 </Box>
                 </DialogContent>
             </Dialog>
-
         </div>
 
     }

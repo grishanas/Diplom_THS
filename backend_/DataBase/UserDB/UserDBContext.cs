@@ -42,40 +42,6 @@ namespace backend_.DataBase.UserDB
                         m2m.Property(x => x.idUserRole).HasColumnName("ut_id");
                     }  
                 );
-            modelBuilder.Entity<UserRole>()
-                .HasMany(x => x.controllerGroups)
-                .WithMany(x => x.userRoles)
-                .UsingEntity<m2mUserRoleControllerGroup>(
-                x => x.HasOne(t => t.controllerGroup)
-                      .WithMany(t => t.m2mUserRolesControllerGroups)
-                      .HasForeignKey(t => t.userRoleId),
-                x => x.HasOne(t => t.userRole)
-                    .WithMany(t => t.m2mUserRoleControllerGroups)
-                    .HasForeignKey(t => t.controllerGroupId),
-                x =>
-                {
-                    x.Property(x => x.controllerGroupId).HasColumnName("mc_g_id");
-                    x.Property(x => x.userRoleId).HasColumnName("ut_id");
-                    x.HasKey(x => new { x.controllerGroupId, x.userRoleId });
-                    x.ToTable("m2m_mcg_utx");
-                });
-            modelBuilder.Entity<UserRole>()
-                .HasMany(x => x.controllerOutputGroups)
-                .WithMany(x => x.userRoles)
-                .UsingEntity<m2mUserRoleControllerOutputGroup>(
-                x => x.HasOne(x => x.controllerOutputGroup)
-                    .WithMany(x => x.m2mUserRoleControllerOutputGroups)
-                    .HasForeignKey(x => x.controllerOutputGroupID),
-                x => x.HasOne(x => x.userRole)
-                    .WithMany(x => x.m2mUserRoleControllerOutputGroups)
-                    .HasForeignKey(x => x.userRoleId),
-                x =>
-                {
-                    x.Property(x => x.controllerOutputGroupID).HasColumnName("mco_g_id");
-                    x.Property(x => x.userRoleId).HasColumnName("ut_id");
-                    x.HasKey(x => new { x.controllerOutputGroupID, x.userRoleId });
-                    x.ToTable("m2m_mcog_ut");
-                });
         }
 
 
@@ -130,7 +96,9 @@ namespace backend_.DataBase.UserDB
 
         public async Task<bool> DeleteUser(int id)
         {
-            Users.Remove(Users.FirstOrDefault(x=>x.id==id));
+            var user=Users.FirstOrDefault(x => x.id == id);
+            user.m2mUserRoles = await m2mUserRoles.Where(x => x.idUser == id).ToListAsync();
+            Users.Remove(user);
             try
             {
                 await this.SaveChangesAsync();

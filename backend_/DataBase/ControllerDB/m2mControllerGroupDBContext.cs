@@ -39,7 +39,7 @@ namespace backend_.DataBase.ControllerDB
         }
         public async Task<bool> Add(int controllerId, int GroupId)
         {
-            var group = new m2mControllerControllerGroup() { ControllerID = controllerId,ControllerGroupID = GroupId };
+            var group = new m2mControllerControllerGroup() { ControllerID = (UInt32)controllerId,ControllerGroupID = GroupId };
             Groups.Add(group);
             try
             {

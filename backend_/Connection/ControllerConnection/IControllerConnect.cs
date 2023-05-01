@@ -3,10 +3,13 @@
     public interface IControllerConnect
     {
         public bool Connect();
+        public void Disconect();
         public Task<byte[]> ReadData(int length);
 
         public Task WriteData(byte[] data, int length);
 
         public void SetIpAddress(string ipAddress, int port);
+
+        public void SetIpAddress(UInt32 ipAddress, int port);
     }
 }

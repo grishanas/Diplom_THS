@@ -43,24 +43,23 @@ namespace backend_
         {
             builder.Services.AddDbContext<ControllerDBContext>(option => option.UseSqlServer(builder.Configuration.GetConnectionString("DataBase")));
             builder.Services.AddDbContext<ControllerGroupDBContext>(option => option.UseSqlServer(builder.Configuration.GetConnectionString("DataBase")));
-            builder.Services.AddDbContext<ControllerNameDBContext>(option => option.UseSqlServer(builder.Configuration.GetConnectionString("DataBase")));
             builder.Services.AddDbContext<ControllerOutputDBContext>(option => option.UseSqlServer(builder.Configuration.GetConnectionString("DataBase")));
             builder.Services.AddDbContext<ControllerOutputRangeDBContext>(option => option.UseSqlServer(builder.Configuration.GetConnectionString("DataBase")));
             builder.Services.AddDbContext<ControllerOutputStateDBContext>(option => option.UseSqlServer(builder.Configuration.GetConnectionString("DataBase")));
             builder.Services.AddDbContext<ControllerOutputValueDBContext>(option => option.UseSqlServer(builder.Configuration.GetConnectionString("DataBase")));
             builder.Services.AddDbContext<ControllerQueryDBContext>(option => option.UseSqlServer(builder.Configuration.GetConnectionString("DataBase")));
-            builder.Services.AddDbContext<ControllerStateDBContext>(option => option.UseSqlServer(builder.Configuration.GetConnectionString("DataBase")));
             builder.Services.AddDbContext<m2mControllerGroupDBContext>(option => option.UseSqlServer(builder.Configuration.GetConnectionString("DataBase")));
             builder.Services.AddDbContext<m2mControllerOutputGroupDBContext>(option => option.UseSqlServer(builder.Configuration.GetConnectionString("DataBase")));
-            builder.Services.AddDbContext<OutputStateValueDBContext>(option => option.UseSqlServer(builder.Configuration.GetConnectionString("DataBase")));
             builder.Services.AddDbContext<m2mControllerOutputGroupDBContext>(option => option.UseSqlServer(builder.Configuration.GetConnectionString("DataBase")));
-
             builder.Services.AddDbContext<UserDBContext>(option => option.UseSqlServer(builder.Configuration.GetConnectionString("DataBase")));
             builder.Services.AddDbContext<GroupDBContext>(option => option.UseSqlServer(builder.Configuration.GetConnectionString("DataBase")));
-         
-
 
             builder.Services.AddSingleton<ConnectionController>();
+            builder.Services.AddHostedService<ConnectionController>(
+                services => services.GetService<ConnectionController>()
+                );
+
+           
         }
 
         public static void Main(string[] args)

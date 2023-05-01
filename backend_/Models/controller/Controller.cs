@@ -1,19 +1,25 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using backend_.Models.network;
+using backend_.Models.controllerGroup;
 
 namespace backend_.Models.controller
 {
 
+    public class UserControllerName
+    {
+        public string Name { get; set; }
+        public string version { get; set; }
+    }
     public class UserController
     {
-        public int IpAddress { get; set; }
+        public UInt32 IpAddress { get; set; }
         public string? description { get; set; }
 
         public int IpPort { get; set; }
         public int? ControllerState { get; set; }
         public string? Name { get; set; }
-        public int? controllerName { get; set; }
+        public UserControllerName controllerName { get; set; }
     }
 
 
@@ -23,7 +29,7 @@ namespace backend_.Models.controller
     {
         public Controller(UserController userController)
         {
-            IpAddress=(int)userController.IpAddress;
+            IpAddress = (UInt32)userController.IpAddress;
             if (userController.IpPort == null)
                 IpPort = 9600;
             else
@@ -31,9 +37,7 @@ namespace backend_.Models.controller
                 IpPort = (int)userController.IpPort;
             }
             description = userController.description;
-            ControllerState = userController.ControllerState;
             Name = userController.Name;
-            controllerName = userController.controllerName;
         }
 
         public Controller()
@@ -45,49 +49,59 @@ namespace backend_.Models.controller
 
         [Column("mc_addres")]
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
-        public int IpAddress { get; set; }
+        public UInt32 IpAddress { get; set; }
 
         [Column("mc_description")]
         public string? description { get; set; }
 
         [Column("mc_port")]
         public int IpPort { get; set; }
-
         [Column("mc_s_id")]
-        public int? ControllerState { get; set; }
+        public int ControllerStateId { get; set; }
+
+        public ControllerState ControllerState { get; set; }
 
         [Column("mc_name")]
         public string? Name { get; set; }
 
         [Column("mcn_id")]
-        public int? controllerName { get; set; }
+        public int? controllerNameId { get; set; }
+        public ControllerName? controllerName { get; set; }
 
+        public List<ControllerGroup>? controllerGroups { get; set; } = new List<ControllerGroup>();
+        public List<m2mControllerControllerGroup> m2mControllerGroups { get; set; } = new List<m2mControllerControllerGroup>();
 
-
+        public List<ControllerOutput> outputs { get; set; } = new List<ControllerOutput>();
     }
 
     [Table("microcontroller_state")]
     public class ControllerState
     {
         [Column("mc_s_id")]
+        [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         public int id { get; set; }
 
         [Column("mc_s_discription")]
         public string Description { get; set; }
+
+        public List<Controller>? controllers { get; set; }
     }
 
     [Table("microcontroller_name")]
     public class ControllerName
     {
         [Column("mcn_id")]
+        [Key]
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public UInt32 id { get; set; }
+        public int id { get; set; }
 
         [Column("mcn_name")]
         public string name { get; set; }
 
         [Column("mcn_version")]
         public string version { get; set; }
+
+        public List<Controller>? controllers { get; set; }
     }
 }

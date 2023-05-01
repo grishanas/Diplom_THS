@@ -1,16 +1,15 @@
-﻿using backend_.Models.UserModels;
-using backend_.Models.controllerGroup;
+﻿using backend_.Models.controllerGroup;
 using System;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
+using System.Collections.Generic; 
 
 namespace backend_.DataBase.UserDB
 {
     public class GroupDBContext:DbContext
     {
-        public DbSet<UserRole> userRoles { get; set; }
-        public DbSet<ControllerGroup> controllerGroups { get; set; }
-        public DbSet<ControllerOutputGroup> controllerOutputGroups { get; set; }
+        public DbSet<UserRole1> userRoles { get; set; }
+        public DbSet<ControllerGroupUser> controllerGroups { get; set; }
+        public DbSet<ControllerOutputGroupUser> controllerOutputGroups { get; set; }
 
 
         public GroupDBContext() : base()
@@ -25,7 +24,7 @@ namespace backend_.DataBase.UserDB
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
 
-            modelBuilder.Entity<UserRole>()
+            modelBuilder.Entity<UserRole1>()
                 .HasMany(x => x.controllerGroups)
                 .WithMany(x => x.userRoles)
                 .UsingEntity<m2mUserRoleControllerGroup>(
@@ -40,9 +39,9 @@ namespace backend_.DataBase.UserDB
                     x.Property(x => x.controllerGroupId).HasColumnName("mc_g_id");
                     x.Property(x => x.userRoleId).HasColumnName("ut_id");
                     x.HasKey(x => new { x.controllerGroupId, x.userRoleId });
-                    x.ToTable("m2m_mcg_utx");
+                    x.ToTable("m2m_mcg_ut");
                 });
-            modelBuilder.Entity<UserRole>()
+            modelBuilder.Entity<UserRole1>()
                 .HasMany(x => x.controllerOutputGroups)
                 .WithMany(x => x.userRoles)
                 .UsingEntity<m2mUserRoleControllerOutputGroup>(

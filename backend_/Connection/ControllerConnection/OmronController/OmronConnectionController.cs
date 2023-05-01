@@ -12,22 +12,43 @@ namespace backend_.Connection.ControllerConnection.OmronController
 
     public class OmronConnectionController : IControllerConnection
     {
-        
-        private ConcurrentDictionary<string, ConcurrentDictionary<string,IControllerCommandImplementation>> controllerCommand;
-        private ConcurrentDictionary<string, TCPClient> Controllers;
+        public UInt32 id { get; }
 
-        private locker IsRun = new locker();
+        public static List<string> GetVersion { get; } = new List<string>()
+        {
+            "CJ2M-CPU33",
+        };
+        public static string GetName { get; } = "OMRON";
 
-        private class locker 
-        {    
-            public bool IsRun = false;
+        private IControllerConnect connect;
+        private ConcurrentDictionary<string,IControllerCommandImplementation> controllerCommand =
+            new ConcurrentDictionary<string, IControllerCommandImplementation>();
+
+        public List<string> AllowCommand { get; private set; } = new List<string>();
+        public locker IsRun { get; set; }
+
+        public OmronConnectionController(Models.controller.Controller controller)
+        {
+            id = controller.IpAddress;
+            this.IsRun = new locker();
         }
 
-        public IControllerCommand GetCommand(string ControllerAddress,string OutputId)
+
+        public OmronConnectionController(UInt32 address,int port)
         {
-            controllerCommand.TryGetValue(ControllerAddress, out var cmd);
-            cmd.TryGetValue(OutputId, out var res);
-            return res;
+            this.id = address;
+            this.IsRun = new locker();
+            AllowCommand = FinsComand.allowedCommand;
+
+            connect = new TCPClient();
+            connect.SetIpAddress(address, port);
+        }
+
+
+        public IControllerCommand? GetCommand(string OutputId)
+        {
+            controllerCommand.TryGetValue(OutputId, out var cmd);
+            return cmd;
         }
 
 
@@ -48,65 +69,30 @@ namespace backend_.Connection.ControllerConnection.OmronController
             }
             while (this.IsRun.IsRun)
             {
-                foreach(var controller in this.Controllers)
+                foreach(var cmd in controllerCommand)
                 {
-                    this.controllerCommand.TryGetValue(controller.Key, out var cmds);
-                    foreach(var cmd in cmds)
-                    {
-                        var res = await cmd.Value.ExecuteCommand();
-                    }
+                    var res = await cmd.Value.ExecuteCommand();
                 }
+                
             }
         }
-
-
-        #region controller
-        public async Task<bool> AddNewController(IPEndPoint ip)
-        {
-
-            this.Controllers.TryGetValue(ip.ToString(), out var controller);
-            if (controller != null)
-                return false;
-
-            var TCPconnection = new TCPClient(ip);
-            var result = this.Controllers.TryAdd(TCPconnection.ToString(), TCPconnection);
-            if(result)
-            {
-                var listComand = new ConcurrentDictionary<string, IControllerCommandImplementation>();
-                var res = this.controllerCommand.TryAdd(TCPconnection.ToString(), listComand);
-            }
-            return result;
-        }
-
-        public async Task<bool> AddNewController(string ip,int port)
-        {
-            var IPEnd = new IPEndPoint(IPAddress.Parse(ip), port);
-            return await AddNewController(IPEnd);
-        }
-
-        public async Task<bool> DeleteController()
-        {
-            return false;
-        }
-        #endregion
 
 
 
         #region FinsComand
-        public bool AddComand(string ControllerAddress, string OutputId,string command)
+        public bool AddCommand(string OutputId,string? command)
         {
             var FinsCommand = new FinsComand();
-            FinsCommand.SetCommand(command);
-            this.Controllers.TryGetValue(ControllerAddress, out var Controller);
-            FinsCommand.SetTransportLaeyr(Controller);
+            if(command != null)
+                FinsCommand.SetCommand(command);
+            FinsCommand.SetTransportLaeyr(this.connect);
+            controllerCommand.TryAdd(OutputId, FinsCommand);
             return true;
 
         }
-        public bool DeleteComand(string ControllerAddress, string OutputId)
+        public bool DeleteComand(string OutputId)
         {
-
-            this.controllerCommand.TryGetValue(ControllerAddress, out var ComandOnController);
-            ComandOnController.TryRemove(OutputId,out var cmd);
+            controllerCommand.TryRemove(OutputId,out var cmd);
             return true;
         }
 

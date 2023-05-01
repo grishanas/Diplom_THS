@@ -30,8 +30,8 @@
 
 	public enum FinsComandCode: UInt16
     {
-		MemoryAreaRead = 0x0101,
-		MemoryAreaWrite = 0x0102,
+		MemoryAreaRead = 0101,
+		MemoryAreaWrite = 0102,
     }
 
 	class FinsErrorCodes

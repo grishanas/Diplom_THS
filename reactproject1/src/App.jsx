@@ -37,7 +37,7 @@ export default class App extends Component {
                 display={'flex'}   
                 container
                 width={'100%'}
-                height={'100vh'}
+                height={'100%'}
                 direction="column"
                 justifyContent="flex-start"
                 alignItems="center">

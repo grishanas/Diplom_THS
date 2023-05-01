@@ -4,6 +4,8 @@ using backend_.Models.controllerGroup;
 
 namespace backend_.Models.UserModels
 {
+
+
     [Table("users_role")]
     public class UserRole
     {
@@ -17,11 +19,6 @@ namespace backend_.Models.UserModels
 
         public List<User>? users { get; set; } = new List<User>();
         public List<m2mUserRole>? m2mUserRoles { get; set; } = new List<m2mUserRole>();
-
-        public List<ControllerOutputGroup>? controllerOutputGroups { get; set; } = new List<ControllerOutputGroup>();
-        public List<m2mUserRoleControllerOutputGroup>? m2mUserRoleControllerOutputGroups { get; set; } = new List<m2mUserRoleControllerOutputGroup>();
-        public List<ControllerGroup>? controllerGroups { get; set; } = new List<ControllerGroup>();
-        public List<m2mUserRoleControllerGroup>? m2mUserRoleControllerGroups { get; set; } = new List<m2mUserRoleControllerGroup>();
 
     }
 

@@ -22,7 +22,8 @@ export default class DeleteUser extends React.Component
     }
     async deleteUser()
     {
-        this.state.Request.delete('/api/User/DeleteUser/?id='+this.props.id).then((e)=>{
+        console.log('Delete user')
+        this.state.Request.delete('/api/User/DeleteUser/'+this.props.id).then((e)=>{
             console.log(e);
         })
     }
@@ -36,7 +37,7 @@ export default class DeleteUser extends React.Component
             <Box display={"flex"} flexDirection={"column"} >
                 <Typography> Вы точно хотите удалить пользователя ?</Typography>
                 <Box flexDirection={"row"}>
-                    <Button onClick={(e)=>{console.log(this);this.deleteUser();this.setState({visible:false}) }}>Подтвердить</Button>
+                    <Button onClick={async (e)=>{console.log(this);await this.deleteUser();this.setState({visible:false}) }}>Подтвердить</Button>
                     <Button onClick={(e)=>{console.log('dsa');this.setState({visible:false})}}>Отменить</Button>
                 </Box>
             </Box>

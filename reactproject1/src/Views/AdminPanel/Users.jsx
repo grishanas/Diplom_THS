@@ -1,7 +1,7 @@
 'use strict';
 
 
-import { Box, Button, Card, FormControl, Grid, Input, InputLabel, MenuItem, OutlinedInput, Select, TextField, Typography } from "@mui/material";
+import { Box, Button, Card, FormControl, Grid, Input, InputLabel, MenuItem, OutlinedInput, Paper, Select, TextField, Typography } from "@mui/material";
 import axios from "axios";
 import React, { createRef } from "react";
 import { BaseUrl } from "../../App";
@@ -16,7 +16,6 @@ import PopUpWindow from "./PopUpWindow";
 import AddUserRole from "./AddUserRole";
 import Chip from "@mui/material/Chip";
 import DeleteUser from "./DeleteUser";
-import { Column } from "ag-grid-community";
 import PopUpMenuRole from "./PopUpMenuRole";
 
 ModuleRegistry.registerModules([ ClientSideRowModelModule, ]);
@@ -45,13 +44,12 @@ class GroupCellRender{
 
 export default class Users extends React.Component
 {
-    addUserRole(id,GetRoles,GetUser){
+    addUserRole(id,context){
         if(id===undefined)
         {
             return null;
         }
-        console.log(this);
-        return <AddUserRole id={id} GetRoles={GetRoles} GetUser={GetUser}/>
+        return <AddUserRole id={id} GetRoles={context.GetRoles} GetUser={context.GetUser}/>
     };
 
     deleteUser(id)
@@ -263,125 +261,106 @@ export default class Users extends React.Component
 
     render()
     {
-        return <div>
+        return <Paper>
             <Grid
-                height="100%"
                 width="100%"
                 container
-                style={{marginTop:"60px"}}
                 direction="column"
                 justifyContent="center"
                 alignItems="stretch">
-                    <Grid item>
-                        <Card>
-                            <Grid 
-                                display="flex"
-                                container
-                                direction="column"
-                                justifyContent="center"
-                                >
-                                <Grid item>
-                                    <Typography  textAlign={"center"}>
-                                        Все пользователи
-                                    </Typography>
-                                </Grid>
-                                <Grid item height={"600px"}>
-                                <div className="ag-theme-alpine" style={{ height: 400, width: "100%" }}>
-                                    <AgGridReact
-                                        columnDefs={this.state.columnDefs}
-                                        defaultColDef={this.state.defaultColDef}
-                                        autoGroupColumnDef={this.state.autoGroupColumnDef}
-                                        context={{
+                    <Grid item>              
+                        <Typography  textAlign={"center"}>
+                          Все пользователи
+                        </Typography>
+                        <Grid item>
+                            <div className="ag-theme-alpine" style={{ minHeight: 400,height:400, width: "100%" }}>
+                                <AgGridReact
+                                    columnDefs={this.state.columnDefs}
+                                    defaultColDef={this.state.defaultColDef}
+                                    autoGroupColumnDef={this.state.autoGroupColumnDef}
+                                    context={{
                                         'GetUser':this.GetUser,
                                         'GetRoles':this.GetRoles}}
-                                        onGridReady={e=>{this.GetUsersAsync();this.GetRolesAsync()}}
-                                     
-                                        animateRows={true}
-                                        rowData={this.state.readyData}
-                                    />
-                                </div>
-                                </Grid>
-                                <Grid item width={"100%"} >
-                                    <Card>
-                                        <Box  
-                                            display={"flex"} 
-                                            component="form"
-                                            flexDirection="column"
-                                            justifyContent="center"
-                                            alignItems="center"
+                                    onGridReady={e=>{this.GetUsersAsync();this.GetRolesAsync()}}
+                                 
+                                    animateRows={true}
+                                    rowData={this.state.readyData}
+                                />
+                            </div>
+                        </Grid>
+                    </Grid>        
+                    <Grid item width={"100%"} >
+                        <Card >
+                            <Box  
+                                display={"flex"} 
+                                component="form"
+                                flexDirection="column"
+                                justifyContent="center"
+                                alignItems="center"
+                            >
+                                <FormControl >
+                                    <InputLabel>Имя пользователя</InputLabel>
+                                        <Input
+                                            required
+                                            value={this.state.NewUserLogin}
+                                            onChange={(e)=>this.setState({NewUserLogin:e.target.value})}
+                                            id="input-name"
+                                        />
+                                    </FormControl>
+                                    <FormControl>
+                                        <InputLabel>Пароль</InputLabel>
+                                        <Input
+                                            required
+                                            value={this.state.NewUserPassword}
+                                            onChange={(e)=>this.setState({NewUserPassword:e.target.value})}
+                                            id="input-password"
+                                        />
+                                    </FormControl >
+                                    <FormControl>
+                                        <Select
+                                            multiple
+                                            placeholder="роль"
+                                            id="add-select-role"
+                                            value={this.state.addUserRoles}
+                                            onChange={(e)=>{
+                                                this.setState({addUserRoles:e.target.value})
+                                            }}
+                                            input={<OutlinedInput id="select-multiple-role" label="Роли" />}
+                                            renderValue={(selected)=>(
+                                                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                                                {selected.map((element) =>(
+                                                    <Chip label={element.description} key={element.id}/>  
+                                                )
+                                                
+                                                )}
+                                                </Box>
+                                            )} 
                                         >
-                                        <FormControl >
-                                            <InputLabel>Имя пользователя</InputLabel>
-                                            <Input
-                                                required
-                                                value={this.state.NewUserLogin}
-                                                onChange={(e)=>this.setState({NewUserLogin:e.target.value})}
-                                                id="input-name"
-                                            />
+                                            {this.state.rawRolesData?
+                                                this.state.rawRolesData.map((element)=>(
+                                                    <MenuItem
+                                                        key={element.id}
+                                                        value={element}
+                                                    >
+                                                        {element.description}
+                                                    </MenuItem> 
+                                                ))
+                                            :<MenuItem>load</MenuItem>}
+
+                                        </Select>
                                         </FormControl>
                                         <FormControl>
-                                            <InputLabel>Пароль</InputLabel>
-                                            <Input
-                                                required
-                                                value={this.state.NewUserPassword}
-                                                onChange={(e)=>this.setState({NewUserPassword:e.target.value})}
-                                                id="input-password"
-                                            />
-                                        </FormControl >
-                                        <FormControl>
-                                            <Select
-                                                multiple
-                                                placeholder="роль"
-                                                id="add-select-role"
-                                                value={this.state.addUserRoles}
-                                                onChange={(e)=>{
-                                                    this.setState({addUserRoles:e.target.value})
-                                                }}
-                                                input={<OutlinedInput id="select-multiple-role" label="Роли" />}
-                                                renderValue={(selected)=>(
-                                                    <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                                                    {selected.map((element) =>(
-                                                        <Chip label={element.description} key={element.id}/>  
-                                                    )
-                                                    
-                                                    )}
-                                                    </Box>
-                                                )} 
-                                            >
-                                                {this.state.rawRolesData?
-                                                    this.state.rawRolesData.map((element)=>(
-                                                        <MenuItem
-                                                            key={element.id}
-                                                            value={element}
-                                                        >
-                                                            {element.description}
-                                                        </MenuItem> 
-                                                    ))
-                                                :<MenuItem>load</MenuItem>}
-
-                                            </Select>
-                                            </FormControl>
-                                            <FormControl>
-                                                <Button onClick={this.SendNewUser}>Подтвердить</Button>
-                                            </FormControl>
-                                        
-                                        </Box>
-                                    </Card>
-
-                                </Grid>
-
-                            </Grid>
+                                            <Button onClick={this.SendNewUser}>Подтвердить</Button>
+                                        </FormControl>
+                                    
+                                    </Box>
                         </Card>
-                    </Grid>
-                    <Grid item>
-
-                    </Grid>
-                    <Grid item>
 
                     </Grid>
 
-            </Grid>
-            </div>
+                </Grid>
+            
+            </Paper>
         
     }
 

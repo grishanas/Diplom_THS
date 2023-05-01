@@ -2,6 +2,8 @@
 using Microsoft.AspNetCore.Mvc;
 using backend_.Models.controller;
 using backend_.DataBase.ControllerDB;
+using backend_.Connection;
+using backend_.Connection.ControllerConnection;
 
 namespace backend_.Controllers.MCController
 {
@@ -10,12 +12,19 @@ namespace backend_.Controllers.MCController
     public class ControllerController : ControllerBase
     {
         private readonly ControllerDBContext _dbContext;
-        private readonly ControllerNameDBContext _controllerName;
-        private readonly Connection.ConnectionController controllers; 
+        private readonly Connection.ConnectionController controllers;
 
-        public ControllerController(ControllerDBContext dbContext)
+        public ControllerController(ControllerDBContext dbContext, Connection.ConnectionController controllers)
         {
             _dbContext = dbContext;
+            this.controllers = controllers;
+        }
+
+        [HttpGet("GetAllowedControllers")]
+        public async Task<IResult> GetAllAllowControllers()
+        {
+            var result = ControllerFactory.some.Keys;
+            return Results.Json(result);
         }
 
         [HttpGet("GetAll")]
@@ -23,7 +32,19 @@ namespace backend_.Controllers.MCController
         {
             try
             {
-                return Results.Json(_dbContext.controllers.ToList());
+                var res = await _dbContext.GetAllControllers();
+                foreach(var controller in res)
+                {
+                    controller.controllerName.controllers = null;
+                    controller.ControllerState.controllers = null;
+                    foreach(var item in controller.outputs)
+                    {
+                        item.outputState.controllers = null;
+                        item.controller = null;
+                     
+                    }
+                }
+                return Results.Json(res);
             }
             catch (Exception e)
             {
@@ -32,7 +53,7 @@ namespace backend_.Controllers.MCController
         }
 
         [HttpGet("GetController/{id}")]
-        public async Task<IResult> GetController([FromRoute] int id)
+        public async Task<IResult> GetController([FromRoute] UInt32 id)
         {
             try
             {
@@ -44,24 +65,93 @@ namespace backend_.Controllers.MCController
             }
 
         }
-        private async void AddController(backend_.Models.controller.Controller controller)
-        {
-            if (controller.Name == null)
-                return;
-            var controllerName = await this._controllerName.Get(int.Parse(controller.Name));
-            if (controllerName == null)
-                return;
-            switch (controllerName.name)
-            {
-                case "Omron":
-                    {
 
-                        break;
-                    }
+        public class ControllerAndGroup
+        {
+            public UInt32 id { get; set; }
+            public int group { get; set; }
+        }
+
+        [HttpPost("AddControllerToGroup")]
+        public async Task<IResult> AddControllerToGroup([FromBody] ControllerAndGroup controller)
+        {
+            try
+            {
+                var res = await _dbContext.AddControllerToGroup(controller.group, controller.id);
+                if (res)
+                    return Results.Ok();
+
+                return Results.Problem();
+            }
+            catch(Exception e)
+            {
+                return Results.Problem();
+            }
+        }
+
+        [HttpPost("DeleteControllerFromGroup")]
+        public async Task<IResult> DeleteControllerFromGroup([FromBody] ControllerAndGroup controller)
+        {
+            try
+            {
+                var res = await _dbContext.DeleteControllerFromGroup(controller.group, controller.id);
+                if (res)
+                    return Results.Ok();
+
+                return Results.Problem();
+            }
+            catch (Exception e)
+            {
+                return Results.Problem();
+            }
+        }
+
+        [HttpPost("StopController/{id}")]
+        public async Task<IResult> StopController([FromRoute] UInt32 id)
+        {
+            try
+            {
+                var controller = await _dbContext.GetController(id);
 
             }
+            catch (Exception e)
+            {
+                return Results.Problem();
+            }
+            return Results.Ok();
+        }
 
+        [HttpPost("StartController/{id}")]
+        public async Task<IResult> StartController([FromRoute] UInt32 id)
+        {
+            try
+            {
+                controllers.Start(id);
 
+            }
+            catch(Exception e)
+            {
+                return Results.Problem();
+            }
+            return Results.Ok();
+        }
+
+        private IControllerConnection AddControll(UserController controller)
+        {
+            if (controller.Name == null)
+                return null;
+            var controllerName = controller.controllerName;
+            if (controllerName == null)
+                return null;
+            var newController = ControllerFactory.Create(controller);
+            this.controllers.AddController(newController);
+
+            return newController;
+        }
+
+        private void DeleteController(UInt32 ipAddress)
+        {
+            controllers.RemoveController(ipAddress);
         }
 
 
@@ -70,17 +160,19 @@ namespace backend_.Controllers.MCController
         {
             try
             {
+                var res = AddControll(controller);
+                if(res== null)
+                    return Results.Problem();
                 var result = await _dbContext.AddController(controller);
                 if (result)
                 {
-                    var controll = await _dbContext.GetController(controller.IpAddress);
-                    AddController(controll);
-
-
                     return Results.Ok();
                 }
                 else
+                {
+                    controllers.RemoveController(res.id);
                     return Results.Problem();
+                }
             }
             catch(Exception e)
             {
@@ -91,7 +183,7 @@ namespace backend_.Controllers.MCController
 
 
         [HttpDelete("DeleteController/{id}")]
-        public async Task<IResult> DeleteController([FromRoute] int ip)
+        public async Task<IResult> DeleteControllerID([FromRoute] UInt32 ip)
         {
             try
             {

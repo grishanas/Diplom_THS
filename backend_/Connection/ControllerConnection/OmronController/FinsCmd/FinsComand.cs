@@ -1,11 +1,29 @@
 ﻿using backend_.Connection.ControllerConnection.OmronController.TransportLayer;
+using Newtonsoft.Json;
+using System.Text;
+using backend_.Models.controller;
 
 namespace backend_.Connection.ControllerConnection.OmronController.FinsCmd
 {
+    [Serializable]
+	public class FinsRequest
+    {
+		public string code { get; set; }
+			
+		public string memoryArea { get; set; }
+		public string descriptions { get; set; }
+		
+		public int startAddress { get; set; }
+		
+		public byte bitshift { get; set;}
+
+		public int length { get; set; }
+    }
 	public class FinsComand : IControllerCommandImplementation
 	{
-        #region
-        private event Command Answer;
+		public locker IsRun { get; set; }
+		#region
+		private event Command Answer;
 		private event Command Errore;
 		public void SetAnswerListener(Command Delegate)
 		{
@@ -32,28 +50,36 @@ namespace backend_.Connection.ControllerConnection.OmronController.FinsCmd
 
 		public void SetCommand(string comand)
 		{
+			var command = JsonConvert.DeserializeObject<FinsRequest>(comand);
+			var code = int.Parse(command.code);
+			var memoryArea = (MemoryArea)byte.Parse(command.memoryArea);
+			if (code == (ushort)FinsComandCode.MemoryAreaRead)
+            {
+                MemoryAreaRead((MemoryArea)byte.Parse(command.memoryArea), (UInt16)command.startAddress, (UInt16)command.length, command.bitshift,null);
+            }
 
 		}
 
-		private static Dictionary<string, string> allowedCommand = new Dictionary<string, string>()
-        {
-            {
-				"0101", "some description"
-			},
+		public static List<string> allowedCommand = new List<string>()
+		{
+
+			JsonConvert.SerializeObject(new FinsRequest()
+				{code=((int)FinsComandCode.MemoryAreaRead).ToString(),memoryArea =((int)MemoryArea.CIO).ToString(),descriptions="чтение байта памяти из CIO",startAddress=0,bitshift=0,length=0}),
+			
         };
 
-		public Dictionary<string,string> GetAllowedCommand()
+		public List<string> GetAllowedCommand()
         {
 			return allowedCommand;
         }
 
-		public void SetTransportLaeyr(TCPClient client)
+		public void SetTransportLaeyr(IControllerConnect client)
         {
 			Transport = client;
         }
 
 		private string _lastError = "";
-		private TCPClient Transport;
+		private IControllerConnect Transport;
 		Byte[] cmdFins = new Byte[]
 		{
 			//---- COMMAND HEADER -------------------------------------------------------
@@ -283,7 +309,7 @@ namespace backend_.Connection.ControllerConnection.OmronController.FinsCmd
 
 			var resposNADS = new byte[24];
 
-			resposNADS = await Transport.ReadData();
+			resposNADS = await Transport.ReadData(24);
 
 			if (resposNADS[15] != 0)
 			{
@@ -317,13 +343,22 @@ namespace backend_.Connection.ControllerConnection.OmronController.FinsCmd
 
 		public async Task<bool> ExecuteCommand()
         {
-			return await SendFrames(null);
+			var run = false;
+			lock(this.IsRun)
+            {
+				if(this.IsRun.IsRun)
+                {
+					run = true;
+                }
+            }
+			if(run)
+				return await SendFrames(null);
+			return false;
 
 		}
 		protected async Task<bool> SendFrames(byte[]? data)
         {
 			Array.Fill(ResponseHeader, (byte)0, 0, ResponseHeader.Length);
-
 
 			var FinsLength = this.finsCommandLen + 8;
 
