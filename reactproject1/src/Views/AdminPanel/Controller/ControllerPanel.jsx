@@ -1,5 +1,5 @@
 import { AgGridReact } from "@ag-grid-community/react";
-import { Card, Typography,Grid, Paper, Box, FormControl, FormLabel, InputLabel, Input, Select, Button } from "@mui/material";
+import { Card, Typography,Grid, Paper, Box, FormControl, FormLabel, InputLabel, Input, Select, Button, MenuItem } from "@mui/material";
 import React, { Component } from "react";
 import PopUpWindow from "../PopUpWindow";
 import axios from "axios";
@@ -47,6 +47,11 @@ export default class ControllerPanel extends React.Component
                     headerName:'Описание',
                     cellRenderer:Render
                 },
+                {
+                    field:"name",
+                    headerName:"Название контроллера",
+                    cellRenderer:Render
+                }
             ],
             defaultColDef: {
                 flex: 1,
@@ -58,14 +63,27 @@ export default class ControllerPanel extends React.Component
                 minWidth: 200,
             },
             readyData:undefined,
+            controllerName:undefined,
+
+            ipV4:undefined,
+            name:undefined,
+            description:undefined,
+            ControllerName:undefined
         }
         this.state.Request = axios.create({
             baseURL:BaseUrl,
             headers:{ 'Content-Type': 'application/json' },
+            withCredentials:true,
         })
+
+
 
     }
 
+    async SendController()
+    {
+
+    }
 
     IPV4toInt(ip)
     {
@@ -90,8 +108,28 @@ export default class ControllerPanel extends React.Component
         let part4=(int>>24)&255;
         return part4.toString()+"."+part3.toString()+"."+part2.toString()+"."+part1.toString();
     }
+    async GetControllerNames()
+    {
+        let responce = await this.state.Request.get("api/ControllerName/AllowedControllerName");
+        switch(responce.status)
+        {
+            case 200:
+                {
+                    let data=[];
+                    responce.data.value.forEach((element)=>{
+                        let tmp ={};
+                        tmp.name= element.name;
+                        tmp.values=element.values
+                        data.push(tmp);
+                    })
+                    this.setState({controllerName:data});
+                    break;
+                }
+        }
+    }
     async GetController()
     {
+        this.GetControllerNames();
         this.state.Request.get("/api/Controller/GetAll").then((e)=>{
             switch(e.status)
             {
@@ -99,8 +137,10 @@ export default class ControllerPanel extends React.Component
                     let data =[];
                     e.data.value.forEach((element)=>{
                         let tmp = {};
+                        console.log(element);
                         tmp.id=this.IntToIPV4(element.ipAddress);
                         tmp.description=element.description;
+                        tmp.name = element.controllerName.name+"  "+element.controllerName.version;
                         data.push(tmp);
                     })
                     
@@ -170,15 +210,25 @@ export default class ControllerPanel extends React.Component
                                     </FormControl>
                                     <FormControl sx={{ m: 1, minWidth: 200 }}>
                                         <InputLabel>Описание контроллера</InputLabel>
-                                        <Select
-                                            label="Выбирете описание контроллера"
+                                        <Select 
+                                            label="Выбирете тип контроллера"
                                             value={this.state.ControllerName}
                                         >
+                                            {this.state.controllerName ? this.state.controllerName.map((element)=>(
+                                                element.values.map((e)=>(
+                                                    <MenuItem
+                                                        key={element.name + " " + e}
+                                                        value={element.name + " " + e}
+                                                    >
+                                                        {element.name + " " + e}
+                                                    </MenuItem>
+                                                ))
+                                            )) : null}
                                         </Select>
                                     </FormControl>
                                     <FormControl>
-                                        <Button>
-                                            
+                                        <Button onClick={(e)=>{this.SendController()}}>
+                                            Добавить контроллер
                                         </Button>
                                     </FormControl>
                         </Box>

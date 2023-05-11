@@ -10,7 +10,6 @@ export default class PopUpWindow extends React.Component{
     constructor(props)
     {
         super(props)
-        console.log(props);
         this.state={hide:false,setAnchorEl:null,visible:false}
 
         

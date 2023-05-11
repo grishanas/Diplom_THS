@@ -11,6 +11,9 @@ namespace backend_.DataBase.ControllerDB
         public DbSet<m2mUserRoleControllerGroup> userRoleControllerGroups { get; set; }
         public DbSet<UserRole1> userRole1s { get; set; }
 
+        public DbSet<ControllerOutputGroupUser> outputGroups { get; set; }
+        public DbSet<m2mUserRoleControllerOutputGroup> m2mRoleOutputs { get; set; }
+
         public ControllerGroupDBContext() : base()
         {
 
@@ -19,6 +22,7 @@ namespace backend_.DataBase.ControllerDB
         {
 
         }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<ControllerGroupUser>()
@@ -35,7 +39,6 @@ namespace backend_.DataBase.ControllerDB
                      x.HasKey(x => new { x.controllerGroupId, x.userRoleId });
                      x.Property(x => x.controllerGroupId).HasColumnName("mc_g_id");
                      x.Property(x => x.userRoleId).HasColumnName("ut_id");
-                     
                      }
                 );
             modelBuilder.Entity<ControllerOutputGroupUser>()
@@ -59,6 +62,59 @@ namespace backend_.DataBase.ControllerDB
             
 
         }
+
+
+        public async Task<List<ControllerOutputGroupUser>> GetOutputGroupsWithRole(int RoleID)
+        {
+            var Groups = await m2mRoleOutputs
+                .Where(x=>x.userRoleId==RoleID)
+                .Join(outputGroups,x=>x.controllerOutputGroupID,r=>r.id,(x,r)=>r)
+                .ToListAsync();
+            return Groups;
+        }
+
+        public async Task<List<ControllerOutputGroupUser>> OutputsGroups()
+        {
+            var Groups = await outputGroups.ToListAsync();
+            foreach(var group in Groups)
+            {
+                group.userRoles = await m2mRoleOutputs
+                    .Where(x => x.controllerOutputGroupID == group.id)
+                    .Join(userRole1s, x => x.userRoleId, R => R.id, (x, r) => r)
+                    .ToListAsync();
+            }
+            return Groups;
+        }
+
+        public async Task<bool> AddOutputGroup(ControllerOutputGroupUser group)
+        {
+            group.id = 0;
+            outputGroups.Add(group);
+            try
+            {
+                this.SaveChanges();
+            }
+            catch (Exception e)
+            {
+                throw;
+            }
+            return true;
+        }
+        public async Task<bool> DeleteOutputGroup(int id)
+        {
+            outputGroups.Remove(outputGroups.First(x => x.id == id));
+            try
+            {
+                this.SaveChanges();
+            }
+            catch (Exception e)
+            {
+                throw;
+            }
+            return true;
+        }
+
+
         public async Task<List<ControllerGroupUser>> GetAll()
         {
             var allGroups = await controllerGroups.ToListAsync();
@@ -107,60 +163,5 @@ namespace backend_.DataBase.ControllerDB
             }
             return true;
         }
-    }
-
-    public class  ControllerOutputGroupDBContext:DbContext
-    {
-        public DbSet<ControllerOutputGroup> controllerOutputGroups { get; set; }
-
-        public ControllerOutputGroupDBContext() : base()
-        {
-
-        }
-        public ControllerOutputGroupDBContext(DbContextOptions<ControllerOutputGroupDBContext> options) : base(options)
-        {
-
-        }
-
-
-        public async Task<List<ControllerOutputGroup>> GetAll()
-        {
-            return await controllerOutputGroups.ToListAsync();
-        }
-
-        public async Task<ControllerOutputGroup> Get(int id)
-        {
-            return await controllerOutputGroups.FirstAsync(x => x.id == id);
-        }
-
-        public async Task<bool> Add(ControllerOutputGroup controllerGroup)
-        {
-            controllerOutputGroups.Add(controllerGroup);
-            try
-            {
-                this.SaveChanges();
-            }
-            catch (Exception e)
-            {
-                throw;
-            }
-            return true;
-        }
-
-        public async Task<bool> Delete(int id)
-        {
-            controllerOutputGroups.Remove(controllerOutputGroups.First(x => x.id == id));
-            try
-            {
-                this.SaveChanges();
-            }
-            catch (Exception e)
-            {
-                throw;
-            }
-            return true;
-        }
-
-
     }
 }

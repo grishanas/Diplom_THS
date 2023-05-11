@@ -30,6 +30,8 @@ namespace backend_.DataBase.ControllerDB
 
         }
 
+
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Controller>()
@@ -96,6 +98,20 @@ namespace backend_.DataBase.ControllerDB
             modelBuilder.Entity<OutputValue>()
                 .HasKey(x => new { x.controllerOutputId, x.controllerAddress, x.DateTime });
            
+        }
+
+
+        public async Task<List<ControllerOutput>> GetControolerOutputs(int outputGroupID)
+        {
+            var outputs =await m2mControllersOutputGroups
+                .Where(x => x.controllerOutputGroupID == outputGroupID).ToListAsync();
+            var Outputs = new List<ControllerOutput>();
+            foreach(var output in outputs)
+            {
+                var ControllerOutput = await this.GetControllerOutput(output.controllerID, output.controllerOutputID);
+                Outputs.Add(ControllerOutput);
+            }
+            return Outputs;
         }
 
         public async Task<ControllerOutput> GetControllerOutput(UInt32 address,int id)

@@ -47,7 +47,18 @@ namespace backend_.DataBase.UserDB
 
         public async Task<User>? Get(UserLogin userLogin)
         {
-            return await Users.FirstOrDefaultAsync(x => x.password == userLogin.password && x.login == userLogin.login);
+            var user = await Users.FirstOrDefaultAsync(x =>x.login == userLogin.login);
+            if(user==null) return null;
+            user.userRoles = await GetRoles(user.id);
+            return user;
+        }
+
+        private async Task<List<UserRole>> GetRoles(int UserId)
+        {
+            var roles = await m2mUserRoles.Where(x => x.idUser == UserId)
+                .Join(Roles, x => x.idUserRole, R => R.id, (x, R) => R)
+                .ToListAsync();
+            return roles;
         }
 
         public async Task<List<User>> GetAll()
@@ -55,9 +66,7 @@ namespace backend_.DataBase.UserDB
             var users = await Users.ToListAsync();
             foreach(var item in users)
             {
-                var roles =await m2mUserRoles.Where(x=>x.idUser==item.id)
-                            .Join(Roles, x => x.idUserRole, R => R.id, (x, R) => R)
-                            .ToListAsync();
+                var roles = await GetRoles(item.id);
                 item.userRoles = roles;
 
             }
@@ -67,6 +76,7 @@ namespace backend_.DataBase.UserDB
         {
             var user = Users.First(x => x.id == id);
             user.m2mUserRoles = await m2mUserRoles.Where(x => x.idUser == id).ToListAsync();
+            user.userRoles = await m2mUserRoles.Where(x => x.idUser == id).Join(Roles, x => x.idUserRole, r => r.id, (x, r) => r).ToListAsync();
             return user;
         }
 

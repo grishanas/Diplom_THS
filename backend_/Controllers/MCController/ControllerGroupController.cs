@@ -11,12 +11,26 @@ namespace backend_.Controllers.MCController
     {
 
         private readonly ControllerGroupDBContext _dbContext;
-
         public ControllerGroupController(ControllerGroupDBContext dbContext)
         {
             _dbContext = dbContext;
         }
-        [HttpGet("GetAll")]
+
+        [HttpGet("GetControllersOutputGroups")]
+        public async Task<IResult> GetControllersOutputGroups()
+        {
+            try
+            {
+                //var res = _dbContext.
+            }catch(Exception e)
+            {
+                return Results.Problem();
+            }
+            return Results.Ok();
+        }
+
+
+        [HttpGet("GetControllerGroup")]
         public async Task<IResult> GetAll()
         {
             try
@@ -29,7 +43,7 @@ namespace backend_.Controllers.MCController
             }
         }
 
-        [HttpGet("get/{id}")]
+        [HttpGet("getControllerGroup/{id}")]
         public async Task<IResult> Get([FromQuery] int id)
         {
             try
@@ -43,7 +57,7 @@ namespace backend_.Controllers.MCController
             }
         }
 
-        [HttpPost("Add")]
+        [HttpPost("AddControllerGroup")]
         public async Task<IResult> Add([FromBody] ControllerGroupUser controllerGroup)
         {
             try
@@ -59,7 +73,7 @@ namespace backend_.Controllers.MCController
             }
         }
 
-        [HttpDelete("Delete")]
+        [HttpDelete("DeleteControllerGroup")]
         public async Task<IResult> Delete([FromBody] int id)
         {
             try

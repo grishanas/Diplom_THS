@@ -94,10 +94,10 @@ namespace backend_.Models.controller
         public byte[] value { get; set; }
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
         [Column("mcov_id")]
-        public int controllerAddress { get; set; }
+        public UInt32 controllerAddress { get; set; }
         [Column("mco_id")] 
         public int controllerOutputId { get; set; }
-        public ControllerOutput controllerOutput { get; set; }
+        public ControllerOutput? controllerOutput { get; set; }
         [Column("mco_v_time")]
         public DateTime DateTime { get; set; }
 

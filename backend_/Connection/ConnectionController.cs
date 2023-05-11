@@ -9,14 +9,14 @@ using backend_.Connection.ControllerConnection.OmronController;
 namespace backend_.Connection
 {
 
-    public interface IControllerFabricant
+    public interface IControllerManufactory
     {
         public IControllerConnection Create(UserController controller);
 
         public static ControllerVersion GetControllerName { get; }
     }
 
-    public class Omron1 : IControllerFabricant
+    public class OmronManufactory : IControllerManufactory
     {
         public IControllerConnection Create(UserController userController)
         {
@@ -35,11 +35,12 @@ namespace backend_.Connection
         public string Name { get; set; }
         public List<string> version { get; set; }
     }
+
     public static class ControllerFactory
     {
-        public static Dictionary<ControllerVersion, IControllerFabricant> some { get; } = new Dictionary<ControllerVersion, IControllerFabricant>()
+        public static Dictionary<ControllerVersion, IControllerManufactory> some { get; } = new Dictionary<ControllerVersion, IControllerManufactory>()
         {
-            { Omron1.GetControllerName, new Omron1() },
+            { OmronManufactory.GetControllerName, new OmronManufactory() },
         };
 
         public static IControllerConnection Create(UserController controller)
@@ -54,18 +55,21 @@ namespace backend_.Connection
         }
     }
 
+
     public class NameAndVersion
     {
         public string name { get; set; }
         public List<string> version { get; set; } = new List<string>();
     }
 
-    public class ConnectionController : BackgroundService
+
+
+    public class ConnectionController : BackgroundService,IDisposable
     {
-        /* private ConcurrentDictionary<IControllerConnection> _controllers = new List<IControllerConnection>();*/
-        private List<IUserConnection> _userConnections = new List<IUserConnection>();
+        private ConcurrentDictionary<IOwnerConnection, List<IControllerCommand>> _userConnections = new ConcurrentDictionary<IOwnerConnection, List<IControllerCommand>>();
         private ConcurrentDictionary<UInt32, IControllerConnection> _taskManager = new ConcurrentDictionary<UInt32, IControllerConnection>();
         private readonly IServiceScopeFactory _serviceScopeFactory;
+
         private async Task Initialize()
         {
             ControllerDBContext controllerDB;
@@ -90,17 +94,18 @@ namespace backend_.Connection
                         foreach(var command in controller.outputs)
                         {
                             controllerConnection.AddCommand(command.id.ToString(), command.Query!=null?command.Query.query:null);
+
+                            var ControllerCommand = controllerConnection.GetCommand(command.id.ToString());
                             if (command.outputState.description == "RUN")
                             {
-                                var comand = controllerConnection.GetCommand(command.id.ToString());
-                                lock(comand.IsRun)
+                                
+                                lock(ControllerCommand.IsRun)
                                 {
-                                    comand.IsRun.IsRun = true;
+                                    ControllerCommand.IsRun.IsRun = true;
                                 }
                             }
                         }
                     }
-                    
                 }
             }
         }
@@ -111,14 +116,21 @@ namespace backend_.Connection
             
         }
 
+
+        public bool SetOutputState(State state,UInt32 address,int id)
+        {
+            _taskManager.TryGetValue(address, out var controller);
+            var command = controller.GetCommand(id.ToString());
+            lock(command.IsRun)
+            {
+                command.IsRun = state;
+            }
+            return true;
+        }
+
         public ConnectionController(IServiceScopeFactory serviceScopeFactory)
         {
             _serviceScopeFactory = serviceScopeFactory;
-        }
-
-        public void Execute()
-        {
-            
         }
 
         public void Start(UInt32 id)
@@ -126,9 +138,9 @@ namespace backend_.Connection
             _taskManager.TryGetValue(id, out var controller);
             if (controller == null)
                 return;
-
             controller.Start();
         }
+
         public void Stop(UInt32 id)
         {
             _taskManager.TryGetValue(id, out var controller);
@@ -156,11 +168,22 @@ namespace backend_.Connection
             return true;
         }
 
-        public async Task<List<string>> GetAllCommands(UInt32 address)
+        public List<string> GetAllCommands(UInt32 address)
         {
             var controller = _taskManager.Where(x=>x.Value.id== address).FirstOrDefault();
-            var comand = controller.Value.AllowCommand;
+            var comand = controller.Value.AllowedCommand;
             return comand;
+        }
+
+        public Dictionary<string,List<string>> GetAllowedController()
+        {
+            var version = ControllerFactory.some.ToList();
+            var Dict = new Dictionary<string, List<string>>();
+            foreach( var item in version)
+            {
+                Dict.Add(item.Key.Name, item.Key.version);
+            }
+            return Dict;
         }
 
         public bool RemoveCommand(UInt32 address,int id)
@@ -187,9 +210,55 @@ namespace backend_.Connection
 
         }
 
-        public async Task AddUserToController(IControllerConnection controller, IUserConnection userConnection)
+        public void AddUserToControllerOutput(UInt32 address,int id, IOwnerConnection userConnection)
+        {
+            _taskManager.TryGetValue(address,out var Controller);
+            var command = Controller.GetCommand(id.ToString());
+            command.SetAnswerListener(userConnection.listener);
+            _userConnections.TryGetValue(userConnection, out var ListenCommand);
+            List<IControllerCommand> newListCommand;
+            if (ListenCommand == null)
+            {
+                newListCommand = new List<IControllerCommand>();
+                _userConnections.TryAdd(userConnection, newListCommand);
+                lock (newListCommand)
+                {
+                    newListCommand.Add(command);
+                }
+            }
+            else
+            {
+                lock(ListenCommand)
+                {
+                    ListenCommand.Add(command);
+                }
+            }
+
+        }
+
+        public void DeleteUserFromControllerOutput(UInt32 address,int id,IOwnerConnection ownerConnection)
         {
 
         }
+
+        public void DeleteUserFromControllerOutputs(IOwnerConnection ownerConnection)
+        {
+            _userConnections.TryRemove(ownerConnection, out var ListenCommand);
+            if (ListenCommand.Count == 0)
+                return;
+            lock(ListenCommand)
+            {
+                foreach (var listenCommand in ListenCommand)
+                    listenCommand.DeleteAnswerListener(ownerConnection.listener);
+            }
+
+        }
+
+        public void Dispose()
+        {
+
+        }
+
+
     }
 }

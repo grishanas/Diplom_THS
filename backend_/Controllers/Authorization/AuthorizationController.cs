@@ -13,9 +13,9 @@ namespace backend_.Controllers.Authorization
         private readonly backend_.AuthorizationLogic.Authorization authorization;
         private readonly UserDBContext _dbContezxt;
 
-        public AuthorizationController(UserDBContext dbContezxt)
+        public AuthorizationController(UserDBContext dbContezxt, IConfiguration config)
         {
-            this.authorization = new AuthorizationLogic.Authorization(dbContezxt);
+            this.authorization = new AuthorizationLogic.Authorization(dbContezxt, config);
             _dbContezxt = dbContezxt;
         }
 
@@ -24,8 +24,14 @@ namespace backend_.Controllers.Authorization
         {
             try
             {
-                var user = await this.authorization.UserAuthentication(userLogin);
-                return Results.Ok();
+                string Role;
+                var UserToken = await this.authorization.UserAuthentication(userLogin);
+                HttpContext.Response.Cookies.Append("some.Text",UserToken.JWT,
+                    new CookieOptions
+                    {
+                        MaxAge = TimeSpan.FromMinutes(10)
+                    });
+                return Results.Ok(UserToken.Role);
             }
             catch(Exception e)
             {

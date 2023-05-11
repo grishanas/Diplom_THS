@@ -4,10 +4,14 @@ import { width } from "@mui/system";
 import axios from "axios";
 import React from "react";
 import { BaseUrl } from "../App";
+import { Navigate, redirect, useNavigate } from "react-router";
+
+
 
 
 export default class Aythorize extends React.Component
 {
+    
     constructor(props)
     {
         super(props);
@@ -17,14 +21,19 @@ export default class Aythorize extends React.Component
             nickName:"",
             password:"",
             request:null,
-
+            redirect:false,
+            RedirectPath:null,
         }
 
         this.state.request = axios.create({
             baseURL:BaseUrl,
-            headers:{ 'Content-Type': 'application/json' },
+            withCredentials:true,
         })
-
+        // const requestInterceptor = (request) => {
+        //     request.withCredentials = true;
+        //     return request;
+        // };
+        // this.state.request.interceptors.request.use(request => requestInterceptor(request));
     }
 
 
@@ -39,8 +48,18 @@ export default class Aythorize extends React.Component
                 case 200:
                     {
                         this.setState({isAuthorization:true})
-                        console.log(200);
-                        //localStorage.setItem("RefreshToken",e.data.RefreshToken);
+                       
+                        if(e.data.value=='Admin')
+                        {
+                            this.setState({redirect:true,RedirectPath:"/Admin"})    
+
+                        }
+                        else if(e.data.value=='User')
+                        {
+                            this.setState({redirect:true,RedirectPath:"/User"})  
+                            let navigate = new useNavigate();
+                            navigate(this.state.RedirectPath,{replace:true});
+                        } 
                         
                         break;
                     }
@@ -52,9 +71,17 @@ export default class Aythorize extends React.Component
                     }
                 }
             });
-
     }
 
+
+    redirect(){
+        return <Navigate to ={this.state.RedirectPath}/>
+
+    }
+    componentDidUpdate()
+    {
+        console.log("component Update");
+    }
     render()
     {
         return(
@@ -106,10 +133,12 @@ export default class Aythorize extends React.Component
                                 </FormControl>
                             </Grid>
                             <Grid item>
-                                <Button size="medium" onClick={e=>this.SendLoginAndPassword(e)}>Авторизация</Button>
+                                <Button size="medium" onClick={(e)=> this.SendLoginAndPassword(e)}>
+                                        Авторизация</Button>
                             </Grid>
                     </Grid>
                 </Card>
+                {this.state.redirect === true ? this.redirect() :<div> </div> }
             </Paper>
         )
     }

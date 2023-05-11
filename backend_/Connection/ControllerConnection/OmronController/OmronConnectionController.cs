@@ -21,24 +21,25 @@ namespace backend_.Connection.ControllerConnection.OmronController
         public static string GetName { get; } = "OMRON";
 
         private IControllerConnect connect;
+
         private ConcurrentDictionary<string,IControllerCommandImplementation> controllerCommand =
             new ConcurrentDictionary<string, IControllerCommandImplementation>();
 
-        public List<string> AllowCommand { get; private set; } = new List<string>();
-        public locker IsRun { get; set; }
+        public List<string> AllowedCommand { get; private set; } = new List<string>();
+        public State IsRun { get; set; }
 
         public OmronConnectionController(Models.controller.Controller controller)
         {
             id = controller.IpAddress;
-            this.IsRun = new locker();
+            this.IsRun = new State();
         }
 
 
         public OmronConnectionController(UInt32 address,int port)
         {
             this.id = address;
-            this.IsRun = new locker();
-            AllowCommand = FinsComand.allowedCommand;
+            this.IsRun = new State();
+            AllowedCommand = FinsComand.allowedCommand;
 
             connect = new TCPClient();
             connect.SetIpAddress(address, port);

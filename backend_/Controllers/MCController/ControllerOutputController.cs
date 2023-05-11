@@ -120,7 +120,7 @@ namespace backend_.Controllers.MCController
         {
             try
             {
-                var item = await controllers.GetAllCommands((UInt32)address);
+                var item = controllers.GetAllCommands((UInt32)address);
                 return Results.Ok(item);
             }
             catch (Exception e)

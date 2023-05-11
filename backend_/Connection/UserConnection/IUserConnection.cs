@@ -1,9 +1,23 @@
 ﻿using backend_.Connection;
+using backend_.Models.UserModels;
+using backend_.Models.controller;
+using backend_.Connection.ControllerConnection;
 
 namespace backend_.Connection.UserConnection
 {
-    public interface IUserConnection
+
+    public interface IOwnerConnection
     {
-        void ReciveData(byte[] controllerData);
+        public CommandListener listener { get; }
+
+        public UInt32 address { get; }
+        public int OutputId { get; }
     }
+
+    public interface IUserConnection: IOwnerConnection
+    {
+        public User user { get; set; }
+    }
+
+    
 }

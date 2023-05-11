@@ -8,8 +8,6 @@
 
         public Task WriteData(byte[] data, int length);
 
-        public void SetIpAddress(string ipAddress, int port);
-
         public void SetIpAddress(UInt32 ipAddress, int port);
     }
 }

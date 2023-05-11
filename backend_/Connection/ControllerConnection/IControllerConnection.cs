@@ -3,16 +3,17 @@ using System.Net;
 
 namespace backend_.Connection.ControllerConnection
 {
-    public delegate void Command(byte[] controllerData);
+    public delegate void CommandListener(byte[] controllerData);
 
-    public class locker
+    public class State
     {
         public bool IsRun
         {
-            get;set;
-        } 
+            get; set;
+        }
 
-        public locker()
+        public string description { get; set; }
+        public State()
         {
             this.IsRun = false;          
         }
@@ -21,13 +22,13 @@ namespace backend_.Connection.ControllerConnection
     {
         public UInt32 id { get; }
 
-        public locker IsRun { get; set; }
+        public State IsRun { get; set; }
         public bool AddCommand(string OutputId, string? comand);
         public bool DeleteComand(string OutputId);
 
         public IControllerCommand GetCommand(string OutputId);
 
-        public List<string> AllowCommand { get;}
+        public List<string> AllowedCommand { get;}
 
         public Task Start();
         public void Stop();

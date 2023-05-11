@@ -5,7 +5,7 @@ using System.Text;
 using backend_.DataBase.ControllerDB;
 using backend_.DataBase.UserDB;
 using backend_.Connection;
-
+using Microsoft.AspNetCore.CookiePolicy;
 
 
 namespace backend_
@@ -28,15 +28,17 @@ namespace backend_
 
         private static void Cors(WebApplicationBuilder builder)
         {
-            builder.Services.AddCors(option =>
+            builder.Services.AddCors();
+/*            builder.Services.AddCors(option =>
             {
                 option.AddDefaultPolicy(policy =>
                 {
                     policy.AllowAnyOrigin()
+                     .AllowCredentials()
                     .AllowAnyMethod()
                     .AllowAnyHeader();
                 });
-            });
+            });*/
         }
 
         private static void Config(WebApplicationBuilder builder)
@@ -47,8 +49,6 @@ namespace backend_
             builder.Services.AddDbContext<ControllerOutputRangeDBContext>(option => option.UseSqlServer(builder.Configuration.GetConnectionString("DataBase")));
             builder.Services.AddDbContext<ControllerOutputStateDBContext>(option => option.UseSqlServer(builder.Configuration.GetConnectionString("DataBase")));
             builder.Services.AddDbContext<ControllerOutputValueDBContext>(option => option.UseSqlServer(builder.Configuration.GetConnectionString("DataBase")));
-            builder.Services.AddDbContext<ControllerQueryDBContext>(option => option.UseSqlServer(builder.Configuration.GetConnectionString("DataBase")));
-            builder.Services.AddDbContext<m2mControllerGroupDBContext>(option => option.UseSqlServer(builder.Configuration.GetConnectionString("DataBase")));
             builder.Services.AddDbContext<m2mControllerOutputGroupDBContext>(option => option.UseSqlServer(builder.Configuration.GetConnectionString("DataBase")));
             builder.Services.AddDbContext<m2mControllerOutputGroupDBContext>(option => option.UseSqlServer(builder.Configuration.GetConnectionString("DataBase")));
             builder.Services.AddDbContext<UserDBContext>(option => option.UseSqlServer(builder.Configuration.GetConnectionString("DataBase")));
@@ -58,6 +58,7 @@ namespace backend_
             builder.Services.AddHostedService<ConnectionController>(
                 services => services.GetService<ConnectionController>()
                 );
+            builder.Services.AddSingleton<backend_.Connection.UserConnection.UserConnectionController>();
 
            
         }
@@ -85,21 +86,47 @@ namespace backend_
             })
                 .AddJwtBearer(options =>
                 {
-                    options.TokenValidationParameters = new Microsoft.IdentityModel.Tokens.TokenValidationParameters
+                    options.RequireHttpsMetadata = true;
+                    options.SaveToken = true;
+                    options.TokenValidationParameters = new TokenValidationParameters
                     {
+                        ValidateIssuer = false,
+                        ValidateAudience = false,
                         ValidateLifetime = true,
-                        ValidateIssuer = true,
-                        ValidateAudience = true,
-                        ValidateIssuerSigningKey = true,
+                        ValidateIssuerSigningKey = false,
                         IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JWT:SecretKey"])),
                     };
 
                 });
 
 
+
             var app = builder.Build();
 
-            app.UseCors();
+            app.UseCors(x => x
+                .WithOrigins("https://localhost:3000") // путь к нашему SPA клиенту
+                .AllowCredentials()
+                .AllowAnyMethod()
+                .AllowAnyHeader());
+           
+            app.UseCookiePolicy(new CookiePolicyOptions
+            {
+                MinimumSameSitePolicy = SameSiteMode.Strict,
+                HttpOnly = HttpOnlyPolicy.Always,
+                Secure = CookieSecurePolicy.Always
+            });
+
+
+            app.Use(async (context, next) =>
+            {
+                var token = context.Request.Cookies["some.Text"];
+                if (!string.IsNullOrEmpty(token))
+                    context.Request.Headers.Add("Authorization", "Bearer " + token);
+
+                await next();
+            });
+            app.UseAuthentication();
+            app.UseAuthorization();
 
 
             if (app.Environment.IsDevelopment())
@@ -108,8 +135,12 @@ namespace backend_
                 app.UseSwaggerUI();
             }
 
-            app.UseAuthentication();
-            app.UseAuthorization();
+            app.UseCookiePolicy(new CookiePolicyOptions
+            {
+                MinimumSameSitePolicy = SameSiteMode.Strict,
+                HttpOnly = HttpOnlyPolicy.Always,
+                Secure = CookieSecurePolicy.Always
+            });
 
             app.UseHttpsRedirection();
             app.MapControllers();

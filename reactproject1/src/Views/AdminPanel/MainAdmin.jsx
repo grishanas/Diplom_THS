@@ -6,6 +6,7 @@ import AddController from "../AddController";
 import UserRolePanel from "./UserRolePanel";
 import ControllerPanel from "./Controller/ControllerPanel";
 import ControllerName from "./Controller/ControllerName";
+import ValueTableView from "./ValueController/ValueTableView";
 
 //const Headers= [{url:"/Admin/Users",value:"Пользователи"},{url:"/AddRole",value:"Добавить группу пользователей"},{url:"/AddController",value:"Добавить контроллер"},{url:"/All"}];
 const DropDown =[{url:"/Admin/Users",value:"Пользователи"},{url:"/Admin/Roles",value:"Роли пользователей"},{url:"/Admin/Controller",value:"Контроллеры"},
@@ -23,6 +24,7 @@ export default class AdminPage extends React.Component
     {
         return(
             <>
+            <ValueTableView/>
             <Routes>
                 <Route path="/Users" element={<Users />}/>
                 <Route path="/Roles" element={<UserRolePanel />}/>

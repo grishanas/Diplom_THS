@@ -3,12 +3,12 @@ namespace backend_.Connection.ControllerConnection
 {
     public interface IControllerCommand
     {
-        public void DeleteAnswerListener(Command comand);   
-        public void SetAnswerListener(Command comand);
+        public void DeleteAnswerListener(CommandListener comand);   
+        public void SetAnswerListener(CommandListener comand);
 
         public List<string> GetAllowedCommand();
 
-        public locker IsRun { get; set; }
+        public State IsRun { get; set; }
 
     }
 

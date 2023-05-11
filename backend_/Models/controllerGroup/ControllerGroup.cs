@@ -73,6 +73,7 @@ namespace backend_.Models.controllerGroup
         public List<userRole> userRoles { get; set; } = new List<userRole>();
     }
 
+    [Table("microcontroller_output_group")]
     public class ControllerOutputGroupUser
     {
         [Required]

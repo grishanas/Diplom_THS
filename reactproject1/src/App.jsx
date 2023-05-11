@@ -5,8 +5,9 @@ import Header from './Components/Header';
 import Aythorize from './Pages/Authorize';
 import MainPage from './Views/main';
 import AdminPage from './Views/AdminPanel/MainAdmin';
+import ControllerGrid from './Views/UserPanel/controllerGrid';
 
-export const BaseUrl="https://localhost:8080";
+export const BaseUrl="https://localhost:8977";
 const Headers= [{url:"/AddController",value:"A"},{url:"B",value:"B"},{url:"C",value:"C"}];
 
 export default class App extends Component {
@@ -49,6 +50,7 @@ export default class App extends Component {
                     <Routes>    
                         <Route path="/*" element={<MainPage /> }/>
                         <Route path='/Aythorize' element={<Aythorize />}/>
+                        <Route path="/User/*" element={<ControllerGrid />}/>
                         <Route path="/Admin/*" element={<AdminPage ChangeNavMenu={this.ChangeNavMenu} ChangeDropDownMenu={this.ChangeDropDownMenu}/>}/>
                     </Routes>
                 </Grid>

@@ -121,7 +121,7 @@ export default class ControllerGroup extends React.Component
 
     async GetControllerName()
     {
-        this.state.Request.get("/api/ControllerState/GetAll").then((e)=>{
+        this.state.Request.get("/api/ControllerGroup/GetAll").then((e)=>{
             switch(e.status)
             {
                

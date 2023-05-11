@@ -2,11 +2,14 @@
 using Microsoft.AspNetCore.Mvc;
 using backend_.Models.UserModels;
 using backend_.DataBase.UserDB;
+using Microsoft.AspNetCore.Authorization;
+
 
 namespace backend_.Controllers.UsersControllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class UserController : ControllerBase
     {
         private readonly UserDBContext _dbContext;

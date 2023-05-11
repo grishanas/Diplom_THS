@@ -7,14 +7,6 @@ namespace backend_.Connection.ControllerConnection.OmronController.TransportLaye
     {
         public IPEndPoint _iPEndPoint { get; private set; }
         private TcpClient client;
-        public int bufferSize 
-        {
-            get { return bufferSize; }
-            private set 
-            {
-                this.bufferSize = value; this.buffer = new byte[value]; 
-            } 
-        }
 
         public override string ToString()
         {
@@ -53,23 +45,6 @@ namespace backend_.Connection.ControllerConnection.OmronController.TransportLaye
             client = new TcpClient();
             client.Connect(_iPEndPoint);
             return client.Connected;
-        }
-
-        public async Task<byte[]> ReadData()
-        {
-            var buffer = new byte[bufferSize];
-            var responce = new byte[bufferSize];
-            int bytes = 0;
-            using (var networkStream = client.GetStream())
-            {
-                do
-                {
-                    bytes = await networkStream.ReadAsync(buffer);
-                } while (bytes > 0);
-                responce = buffer; 
-
-            }
-            return responce;
         }
 
         public async Task<byte[]> ReadData(int lengthData)

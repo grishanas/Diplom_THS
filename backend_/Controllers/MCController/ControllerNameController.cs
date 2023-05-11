@@ -10,10 +10,37 @@ namespace backend_.Controllers.MCController
     public class ControllerNameController : ControllerBase
     {
         private readonly ControllerDBContext _dbContext;
+        private readonly Connection.ConnectionController _controllerConnectionController;
 
-        public ControllerNameController(ControllerDBContext dbContext)
+        public ControllerNameController(ControllerDBContext dbContext, Connection.ConnectionController controllerConnectionController)
         {
             _dbContext = dbContext;
+            _controllerConnectionController = controllerConnectionController;
+        }
+
+        public class dict
+        {
+            public string Name { get; set; }
+            public List<string> Values { get; set; }
+        }
+        [HttpGet("AllowedControllerName")]
+        public async Task<IResult> GetAllowedControllerName()
+        {
+            try
+            {
+                var controllers = _controllerConnectionController.GetAllowedController();
+                var controll = new List<dict>();
+
+                foreach (var controllerName in controllers)
+                {
+                    controll.Add(new dict() { Name= controllerName.Key,Values = controllerName.Value });
+                }
+                return Results.Json(controll);
+            }
+            catch(Exception e)
+            {
+                return Results.Problem();
+            }
         }
 
 

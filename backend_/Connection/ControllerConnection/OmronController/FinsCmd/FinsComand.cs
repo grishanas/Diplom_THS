@@ -21,15 +21,16 @@ namespace backend_.Connection.ControllerConnection.OmronController.FinsCmd
     }
 	public class FinsComand : IControllerCommandImplementation
 	{
-		public locker IsRun { get; set; }
+		
+		public State IsRun { get; set; }
 		#region
-		private event Command Answer;
-		private event Command Errore;
-		public void SetAnswerListener(Command Delegate)
+		private event CommandListener Answer;
+		private event CommandListener Errore;
+		public void SetAnswerListener(CommandListener Delegate)
 		{
 			Answer += Delegate;
 		}
-		public void DeleteAnswerListener(Command Delegate)
+		public void DeleteAnswerListener(CommandListener Delegate)
 		{
 			Answer -= Delegate;
 		}
