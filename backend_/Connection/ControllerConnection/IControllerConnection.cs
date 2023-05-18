@@ -1,9 +1,12 @@
 ﻿using backend_.Connection;
 using System.Net;
+using backend_.Models.controller;
 
 namespace backend_.Connection.ControllerConnection
 {
-    public delegate void CommandListener(byte[] controllerData);
+
+    public delegate void CommandListener(OutputValue controllerData);
+
 
     public class State
     {
@@ -22,6 +25,8 @@ namespace backend_.Connection.ControllerConnection
     {
         public UInt32 id { get; }
 
+
+
         public State IsRun { get; set; }
         public bool AddCommand(string OutputId, string? comand);
         public bool DeleteComand(string OutputId);
@@ -35,6 +40,7 @@ namespace backend_.Connection.ControllerConnection
 
         public static List<string> GetVersion { get; }
         public static string GetName { get; }
+        public static List<State> AllowedState { get; }
 
     }
 }

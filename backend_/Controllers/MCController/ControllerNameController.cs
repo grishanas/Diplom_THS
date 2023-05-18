@@ -95,12 +95,16 @@ namespace backend_.Controllers.MCController
             }
         }
 
+        public class ID
+        {
+            public int id { get; set; }
+        }
         [HttpDelete("Delete/{id}")]
-        public async Task<IResult> DeleteController([FromRoute] int id)
+        public async Task<IResult> DeleteController([FromBody] ID id)
         {
             try
             {
-                await _dbContext.DeleteControllerName(id);
+                await _dbContext.DeleteControllerName(id.id);
                 return Results.Ok();
             }
             catch (Exception e)

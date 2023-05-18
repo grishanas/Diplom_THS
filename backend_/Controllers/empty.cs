@@ -15,7 +15,7 @@ namespace backend_.Controllers
 
         }
         [HttpGet]
-        [Authorize(Roles = ("Admin"))]
+        //[Authorize(Roles = ("Admin"))]
         public async Task Get()
         {
             Response.ContentType = "text/plain";

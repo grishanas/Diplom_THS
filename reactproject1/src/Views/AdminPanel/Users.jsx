@@ -49,12 +49,13 @@ export default class Users extends React.Component
         {
             return null;
         }
-        return <AddUserRole id={id} GetRoles={context.GetRoles} GetUser={context.GetUser}/>
+        
+        return <AddUserRole id={id} GetRoles={context.GetRoles} GetUser={context.GetUser} RefreshGrid={context.RefreshGrid}/>
     };
 
-    deleteUser(id)
+    deleteUser(id,context)
     {
-        return <DeleteUser id={id}/>
+        return <DeleteUser id={id} RefreshGrid={context.RefreshGrid}/>
     }
 
     GetUser(id)
@@ -150,7 +151,6 @@ export default class Users extends React.Component
 
         this.state.Request=axios.create({
             baseURL:BaseUrl,
-            headers:{ 'Content-Type': 'application/json' },
             withCredentials:true,
         })
 
@@ -172,7 +172,9 @@ export default class Users extends React.Component
             userRoles:this.state.addUserRoles
         }).then((e)=>{
             this.setState({NewUserLogin:undefined,NewUserPassword:undefined,addUserRoles:[]});          
-            console.log(e)});
+            this.RefreshGrid();
+            
+        });
     }
 
     async GetRolesAsync()
@@ -281,9 +283,9 @@ export default class Users extends React.Component
                                     autoGroupColumnDef={this.state.autoGroupColumnDef}
                                     context={{
                                         'GetUser':this.GetUser,
-                                        'GetRoles':this.GetRoles}}
+                                        'GetRoles':this.GetRoles,
+                                        'RefreshGrid':this.RefreshGrid}}
                                     onGridReady={e=>{this.GetUsersAsync();this.GetRolesAsync()}}
-                                 
                                     animateRows={true}
                                     rowData={this.state.readyData}
                                 />
@@ -317,7 +319,8 @@ export default class Users extends React.Component
                                             id="input-password"
                                         />
                                     </FormControl >
-                                    <FormControl>
+                                    <FormControl sx={{width:"180px"}}>
+                                        <InputLabel>роль</InputLabel>
                                         <Select
                                             multiple
                                             placeholder="роль"
@@ -326,13 +329,12 @@ export default class Users extends React.Component
                                             onChange={(e)=>{
                                                 this.setState({addUserRoles:e.target.value})
                                             }}
-                                            input={<OutlinedInput id="select-multiple-role" label="Роли" />}
+                                            input={<OutlinedInput  id="select-multiple-role" label="Роли" />}
                                             renderValue={(selected)=>(
-                                                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
+                                                <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5,width:"100px" }}>
                                                 {selected.map((element) =>(
                                                     <Chip label={element.description} key={element.id}/>  
-                                                )
-                                                
+                                                )    
                                                 )}
                                                 </Box>
                                             )} 
@@ -347,7 +349,6 @@ export default class Users extends React.Component
                                                     </MenuItem> 
                                                 ))
                                             :<MenuItem>load</MenuItem>}
-
                                         </Select>
                                         </FormControl>
                                         <FormControl>

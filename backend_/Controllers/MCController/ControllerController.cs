@@ -57,7 +57,17 @@ namespace backend_.Controllers.MCController
         {
             try
             {
-                return Results.Json(await _dbContext.GetController(id));
+                var controller = (await _dbContext.GetController(id));
+                controller.controllerName.controllers = null;
+                controller.ControllerState.controllers = null;
+                foreach (var item in controller.outputs)
+                {
+                    item.outputState.controllers = null;
+                    item.controller = null;
+
+                }
+                return Results.Json(controller);
+                    
             }
             catch (Exception e)
             {
@@ -133,7 +143,7 @@ namespace backend_.Controllers.MCController
             {
                 return Results.Problem();
             }
-            return Results.Ok();
+            return Results.Ok(); 
         }
 
         private IControllerConnection AddControll(UserController controller)

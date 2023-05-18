@@ -60,6 +60,16 @@ namespace backend_.DataBase.UserDB
                 });
         }
 
+        public async Task<List<ControllerGroupUser>> GetControllerGroups()
+        {
+            var groups = await controllerGroups.ToListAsync();
+            return groups;
+        }
+        public async Task<List<ControllerOutputGroupUser>> GetOutputGroups()
+        {
+            var groups = await controllerOutputGroups.ToListAsync();
+            return groups;
+        }
         public async Task<bool> AddRoleControllerGroup(int roleId,int controllerGroupId)
         {
             var role = await userRoles.FirstOrDefaultAsync(x => x.id == roleId);

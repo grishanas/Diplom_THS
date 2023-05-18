@@ -62,21 +62,32 @@ namespace backend_.AuthorizationLogic
                 claims.Add(new Claim(ClaimTypes.Role, "User"));
                 Role.Role = "User";
             }
-/*            foreach(var item in user.userRoles)
-            {
-                claims.Add(new Claim("User Role", item.id.ToString()));
-            }*/
+            /*            foreach(var item in user.userRoles)
+                        {
+                            claims.Add(new Claim("User Role", item.id.ToString()));
+                        }*/
 
             var jwt = new JwtSecurityToken(
                 claims: claims,
-                expires: DateTime.UtcNow.AddMinutes(10),
+                expires: DateTime.UtcNow.AddMinutes(100),
                 signingCredentials: credentials
-                )
-            {
-
-            };
+                );
             Role.JWT = new JwtSecurityTokenHandler().WriteToken(jwt);
             return Role;
+        }
+
+        public RoleJWT LogOutUser()
+        {
+
+            var securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_config["JWT:SecretKey"]));
+            var credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+            var roleJWT = new RoleJWT();
+            var jwt = new JwtSecurityToken(
+                expires: DateTime.UtcNow.AddMilliseconds(0),
+                signingCredentials: credentials);
+            roleJWT.JWT = new JwtSecurityTokenHandler().WriteToken(jwt);
+            
+            return roleJWT;
         }
 
         public int? ValidateJWT(List<KeyValuePair<string,string>> cookies)

@@ -544,6 +544,25 @@ namespace backend_.DataBase.ControllerDB
             return true;
 
         }
+
+
+        public void AddOutputValue(OutputValue value)
+        {
+            this.outputValues.Add(value);
+            try
+            {
+                this.SaveChanges();
+            }catch(Exception e)
+            {
+
+            }
+
+        }
+        public async Task<List<OutputValue>> GetValues(UInt32 address, int outputId, DateTime startTime, DateTime endTime)
+        {
+            var values = this.outputValues.Where(x=>x.controllerAddress==address && x.controllerOutputId == outputId && x.DateTime>startTime && x.DateTime<endTime).ToList();
+            return values;
+        }
     }
 
 }

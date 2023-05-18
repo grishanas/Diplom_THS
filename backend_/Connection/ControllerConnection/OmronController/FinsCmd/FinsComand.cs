@@ -21,7 +21,22 @@ namespace backend_.Connection.ControllerConnection.OmronController.FinsCmd
     }
 	public class FinsComand : IControllerCommandImplementation
 	{
-		
+		public int id { get; set; }
+		public int Address { get; set; }
+
+		public void SetState(State state)
+        {
+            lock (this.IsRun)
+            {
+				this.IsRun.IsRun = state.IsRun;
+				this.IsRun.description = state.description;
+            }
+        }
+		public static List<State> AllowedState { get; } = new List<State>()
+		{
+			new State() { IsRun = true, description = "RUN" },
+			new State(){ IsRun = false, description = "STOP" }
+		};
 		public State IsRun { get; set; }
 		#region
 		private event CommandListener Answer;
@@ -44,10 +59,13 @@ namespace backend_.Connection.ControllerConnection.OmronController.FinsCmd
 		{
 
 		}
-		public FinsComand()
+		public FinsComand(UInt32 address,int id)
 		{
-
+			this.Address = Address;
+			this.id = id;
 		}
+
+
 
 		public void SetCommand(string comand)
 		{
@@ -352,10 +370,27 @@ namespace backend_.Connection.ControllerConnection.OmronController.FinsCmd
 					run = true;
                 }
             }
-			if(run)
-				return await SendFrames(null);
+			if (run)
+			{
+
+				return await this.Simulate();
+				//return await SendFrames(null);
+			}
 			return false;
 
+		}
+
+		private async Task<bool> Simulate()
+        {
+			var random = new Random();
+			const string chars = "0123456789";
+			int i = 0;
+			var item = new string(Enumerable.Repeat(chars, 4)
+					.Select(s => s[random.Next(s.Length)]).ToArray());
+
+			var controllerData = new OutputValue() { controllerAddress = (UInt32)this.Address, controllerOutputId = this.id, value = Encoding.UTF8.GetBytes(item), DateTime = DateTime.Now };
+			Answer.Invoke(controllerData);
+			return true;
 		}
 		protected async Task<bool> SendFrames(byte[]? data)
         {
@@ -400,7 +435,8 @@ namespace backend_.Connection.ControllerConnection.OmronController.FinsCmd
 			if(finsResponseLen > 14)
             {
 				this.respFinsData = await Transport.ReadData(finsResponseLen - 14);
-				Answer.Invoke(this.respFinsData);
+				var controllerData = new OutputValue() { controllerAddress = (UInt32)this.Address, controllerOutputId = this.id, value = this.respFins, DateTime = DateTime.Now };
+				Answer.Invoke(controllerData);
 			}
 
 			if (this.FinsResponceMainErroreCode != 0 || this.FinsResponceSubErroreCode != 0)

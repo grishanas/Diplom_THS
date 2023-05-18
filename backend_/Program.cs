@@ -104,7 +104,7 @@ namespace backend_
             var app = builder.Build();
 
             app.UseCors(x => x
-                .WithOrigins("https://localhost:3000") // путь к нашему SPA клиенту
+                .SetIsOriginAllowed(isOriginAllowed=> true) // путь к нашему SPA клиенту
                 .AllowCredentials()
                 .AllowAnyMethod()
                 .AllowAnyHeader());

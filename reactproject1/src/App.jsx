@@ -9,25 +9,41 @@ import ControllerGrid from './Views/UserPanel/controllerGrid';
 
 export const BaseUrl="https://localhost:8977";
 const Headers= [{url:"/AddController",value:"A"},{url:"B",value:"B"},{url:"C",value:"C"}];
+const DropDownMenu = [{url:"/Aythorize",value:"Авторизация"}]
 
 export default class App extends Component {
     static displayName = App.name;
 
     constructor(props) {
-        var DropDownMenu = [{url:"/Aythorize",value:"Авторизация"}]
         super(props);
         this.state = {dropDownMenu:DropDownMenu,navigationMenu:Headers,JWTToken:null,refreshJwtToke:null};
         this.ChangeNavMenu=this.ChangeNavMenu.bind(this);
         this.ChangeDropDownMenu= this.ChangeDropDownMenu.bind(this);
     }
 
+    componentDidMount()
+    {
+        console.log("mount")
+    }
+
+    componentDidUpdate()
+    {
+        console.log("update")   
+    }
+    
+
     ChangeDropDownMenu(Menu)
     {
+        if(Menu===undefined)
+            Menu =DropDownMenu;
+        console.log(Menu)
         this.setState({dropDownMenu:Menu})
     }
 
     ChangeNavMenu(newMenu)
     {
+        
+
         this.setState({navigationMenu:newMenu});
     }
 
@@ -45,6 +61,7 @@ export default class App extends Component {
                 <Grid item height={"70px"}>
                     <Header dropMenu={this.state.dropDownMenu} navigationMenu={this.state.navigationMenu}/>
                 </Grid>
+                
                 <Grid item
                 width={"100%"}>
                     <Routes>    

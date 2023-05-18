@@ -8,12 +8,13 @@ export default class PopUpMenuRole extends React.Component
     constructor(props)
     {
         super(props);
+        console.log(props);
         this.state={anchor:null,Request:null}
         this.state.Request=axios.create({
             baseURL:BaseUrl,
             headers:{ 'Content-Type': 'application/json' },
+            withCredentials:true,
         });
-        console.log(props);
     }
 
     async deleteRole()
@@ -27,6 +28,7 @@ export default class PopUpMenuRole extends React.Component
             roleId:this.props.data.userRoleId
             }
         }).then((e)=>{
+            this.props.context.RefreshGrid();
             console.log(e);
         })
     }

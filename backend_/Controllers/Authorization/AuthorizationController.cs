@@ -29,7 +29,7 @@ namespace backend_.Controllers.Authorization
                 HttpContext.Response.Cookies.Append("some.Text",UserToken.JWT,
                     new CookieOptions
                     {
-                        MaxAge = TimeSpan.FromMinutes(10)
+                        MaxAge = TimeSpan.FromMinutes(100)
                     });
                 return Results.Ok(UserToken.Role);
             }
@@ -40,13 +40,30 @@ namespace backend_.Controllers.Authorization
             }
         }
 
-        [HttpOptions("Login")]
-        public async Task<IResult> LogOption()
+        [HttpPost("LogOut")]
+        public async Task<IResult> LogOut()
         {
-            var head = Request.Headers;
+
+            try
+            {
+                var token = authorization.LogOutUser();
+                HttpContext.Response.Cookies.Append("some.Text", token.JWT,
+                    new CookieOptions
+                    {
+                        MaxAge = TimeSpan.FromMinutes(0)
+                    });
+                return Results.Ok();
+            }
+            catch (Exception e)
+            {
+                Response.StatusCode = 400;
+                return Results.Problem();
+            }
            
             return Results.Problem();
             
         }
+
+
     }
 }

@@ -7,36 +7,23 @@ namespace backend_.Connection.UserConnection
     public class DataBaseConnection:IOwnerConnection,IDisposable
     {
         public CommandListener listener { get; }
-        public UInt32 address { get; }
-        public int OutputId { get; }
         private readonly IServiceScopeFactory _serviceScopeFactory;
         private IServiceScope _serviceScope;
         private ControllerDBContext controllerDB;
         private Controller controller;
 
-        DataBaseConnection(IServiceScopeFactory serviceScopeFactory,UInt32 address,int OutputId)
+        DataBaseConnection(IServiceScopeFactory serviceScopeFactory)
         {
             _serviceScopeFactory = serviceScopeFactory;
-            this.address = address;
-            this.OutputId = OutputId;
             _serviceScope = _serviceScopeFactory.CreateScope();
             controllerDB = _serviceScope.ServiceProvider.GetService<ControllerDBContext>();
+            listener = WriteDataToDataBase;
         }
-        private void SaveChanges()
-        {
-            try
-            {
-                controllerDB.SaveChanges();
-            }catch(Exception e)
-            {
 
-            }
-        }
-        private void WriteDataToDataBase(byte[] data)
+        private void WriteDataToDataBase(OutputValue value)
         {
-            var value = new OutputValue() { value= data,DateTime=DateTime.Now};
-            controller.outputs.Find(x => x.id == OutputId).outputValues.Add(value);
-            SaveChanges();
+            
+            controllerDB.AddOutputValue(value);
         }
 
         public void Dispose()

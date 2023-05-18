@@ -2,11 +2,13 @@
 using Microsoft.AspNetCore.Mvc;
 using backend_.Models.UserModels;
 using backend_.DataBase.UserDB;
+using Microsoft.AspNetCore.Authorization;
 
 namespace backend_.Controllers.UsersControllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [AllowAnonymous]
     public class GroupController : ControllerBase
     {
         private readonly GroupDBContext _dbContext;
@@ -52,6 +54,45 @@ namespace backend_.Controllers.UsersControllers
             }
         }
         #endregion
+
+        [HttpGet("OutputGroup")]
+        public async Task<IResult> GetOutputGroup()
+        {
+            try
+            {
+                var res = await _dbContext.GetOutputGroups();
+                foreach(var item in res)
+                {
+                    item.userRoles = null;
+                }
+                return Results.Ok(res);
+            }
+            catch(Exception e)
+            {
+                return Results.Problem();
+            }
+
+
+        }
+
+        [HttpGet("ControllerGroup")]
+        public async Task<IResult> GetControllerGroup()
+        {
+            try
+            {
+                var res = await _dbContext.GetControllerGroups();
+                foreach (var item in res)
+                {
+                    item.userRoles = null;
+                }
+                return Results.Ok(res);
+            }
+            catch (Exception e)
+            {
+                return Results.Problem();
+            }
+
+        }
 
         [HttpDelete("AddControllerGroupRole")]
         public async Task<IResult> DeleteControllerRole([FromBody] RoleAndGroup roleAndGroup)

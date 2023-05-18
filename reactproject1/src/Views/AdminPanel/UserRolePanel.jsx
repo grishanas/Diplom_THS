@@ -26,8 +26,9 @@ class RoleRender extends React.Component
 export default class UserRolePanel extends React.Component
 {
 
-    deleteUserRole(id)
+    deleteUserRole(id,someparams)
     {
+        console.log(someparams);
         return <DeleteUserRole id={id}/>
     }
 
@@ -73,10 +74,10 @@ export default class UserRolePanel extends React.Component
         }
 
         this.deleteUserRole= this.deleteUserRole.bind(this);
+        this.UpdateUserRole = this.GetRoles.bind(this);
 
         this.state.Request = axios.create({
             baseURL:BaseUrl,
-            headers:{ 'Content-Type': 'application/json' },
             withCredentials:true,
         })
 
@@ -114,7 +115,7 @@ export default class UserRolePanel extends React.Component
             id:0,
             description:this.state.NewRole
         }).then((e)=>{
-            console.log(e);
+            this.GetRoles();
         })
     }
 
@@ -142,6 +143,7 @@ export default class UserRolePanel extends React.Component
                     animateRows={true}
                     rowData={this.state.readyData}
                     onGridReady={(e)=>{this.GetRoles()}}
+                    
                 />
                 </div>
                 </Grid>

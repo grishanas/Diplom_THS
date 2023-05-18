@@ -29,11 +29,6 @@ export default class Aythorize extends React.Component
             baseURL:BaseUrl,
             withCredentials:true,
         })
-        // const requestInterceptor = (request) => {
-        //     request.withCredentials = true;
-        //     return request;
-        // };
-        // this.state.request.interceptors.request.use(request => requestInterceptor(request));
     }
 
 
@@ -76,7 +71,6 @@ export default class Aythorize extends React.Component
 
     redirect(){
         return <Navigate to ={this.state.RedirectPath}/>
-
     }
     componentDidUpdate()
     {

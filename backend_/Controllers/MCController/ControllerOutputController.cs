@@ -152,6 +152,11 @@ namespace backend_.Controllers.MCController
             try
             {
                 var res = await _controllerDB.GetControllerOutputs(adrress);
+                foreach(var item in res)
+                {
+                    item.outputState.controllers = null;
+                }
+                return Results.Json(res,statusCode:200);
             }
             catch(Exception e)
             {

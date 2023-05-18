@@ -3,7 +3,7 @@ import axios from "axios";
 import React from "react";
 import { BaseUrl } from "../../App";
 
-export default class DeleteUserRole extends React.Component{
+export default class DeleteSomeThingInGrid extends React.Component{
 
     constructor(props)
     {
@@ -28,14 +28,14 @@ export default class DeleteUserRole extends React.Component{
     {
         return <div>
             <Button variant="text" onClick={(e)=>this.setState({visible:true})}>
-                Удалить Роль
+                {this.props.text}
             </Button>
             <Dialog 
             open={this.state.visible}
             onClose={(e)=>this.setState({visible:false})}>
                 <DialogContent> 
                 <Box display={"flex"} flexDirection={"column"} >
-                    <Typography> Вы точно хотите удалить роль ?</Typography>
+                    <Typography> {this.props.text1 }</Typography>
                     <Box flexDirection={"row"}>
                         <Button onClick={(e)=>{this.delete();this.setState({visible:false}) }}>Подтвердить</Button>
                         <Button onClick={(e)=>{this.setState({visible:false})}}>Отменить</Button>

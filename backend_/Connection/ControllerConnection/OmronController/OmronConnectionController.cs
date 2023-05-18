@@ -14,6 +14,12 @@ namespace backend_.Connection.ControllerConnection.OmronController
     {
         public UInt32 id { get; }
 
+        public static List<State> AllowedState { get; } = new List<State>()
+        {
+            new State(){IsRun = true,description = "RUN"},
+            new State(){IsRun = false, description = "STOP"}
+        };
+
         public static List<string> GetVersion { get; } = new List<string>()
         {
             "CJ2M-CPU33",
@@ -83,7 +89,7 @@ namespace backend_.Connection.ControllerConnection.OmronController
         #region FinsComand
         public bool AddCommand(string OutputId,string? command)
         {
-            var FinsCommand = new FinsComand();
+            var FinsCommand = new FinsComand(this.id,int.Parse(OutputId));
             if(command != null)
                 FinsCommand.SetCommand(command);
             FinsCommand.SetTransportLaeyr(this.connect);

@@ -9,9 +9,6 @@ namespace backend_.Connection.UserConnection
     public interface IOwnerConnection
     {
         public CommandListener listener { get; }
-
-        public UInt32 address { get; }
-        public int OutputId { get; }
     }
 
     public interface IUserConnection: IOwnerConnection

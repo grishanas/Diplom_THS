@@ -12,9 +12,11 @@ namespace backend_.Connection
     public interface IControllerManufactory
     {
         public IControllerConnection Create(UserController controller);
-
         public static ControllerVersion GetControllerName { get; }
+        public List<State> states { get; }
     }
+
+
 
     public class OmronManufactory : IControllerManufactory
     {
@@ -28,6 +30,8 @@ namespace backend_.Connection
             Name = OmronConnectionController.GetName,
             version = OmronConnectionController.GetVersion
         };
+
+        public List<State> states { get; } = OmronConnectionController.AllowedState;
     }
 
     public class ControllerVersion
@@ -126,6 +130,16 @@ namespace backend_.Connection
                 command.IsRun = state;
             }
             return true;
+        }
+
+        public List<State> GetAllowedState(string ControllerName,string controllerVersion)
+        {
+
+            var NamesAndVersions = ControllerFactory.some;
+            var value = NamesAndVersions.FirstOrDefault(x => x.Key.Name == ControllerName && x.Key.version.Contains(controllerVersion));
+
+            var states = value.Value.states;
+            return states;
         }
 
         public ConnectionController(IServiceScopeFactory serviceScopeFactory)

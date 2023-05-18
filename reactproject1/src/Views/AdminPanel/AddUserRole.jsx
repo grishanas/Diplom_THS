@@ -2,6 +2,7 @@ import axios from "axios";
 import React, { createRef } from "react";
 import Tippy from "@tippyjs/react";
 import { BaseUrl } from "../../App";
+import { Button } from "@mui/material";
 
 
 export default class AddUserRole extends React.Component
@@ -18,6 +19,7 @@ export default class AddUserRole extends React.Component
         this.state.Request = axios.create({
             baseURL:BaseUrl,
             headers:{ 'Content-Type': 'application/json' },
+            withCredentials:true
         });
         
 
@@ -35,7 +37,7 @@ export default class AddUserRole extends React.Component
         this.state.Request.post("/api/User/AddRoleToUser",{
             user:this.props.id,
             userRole:role.id
-        }).then((e)=>{console.log(e)});    
+        }).then((e)=>{console.log(e);this.props.RefreshGrid()});    
     }
 
     AddRoleContent()
@@ -78,9 +80,9 @@ export default class AddUserRole extends React.Component
                 interactive={true}
                 placement="right"
             >
-                <button onClick={(e)=>{this.state.visible ? this.setState({visible:false}):this.setState({visible:true})}}>
+                <Button onClick={(e)=>{this.state.visible ? this.setState({visible:false}):this.setState({visible:true})}}>
                     {this._text}
-                </button>    
+                </Button>    
             </Tippy>
         </div>
 

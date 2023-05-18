@@ -10,12 +10,33 @@ namespace backend_.Controllers.MCController
     public class ControllerStateController : ControllerBase
     {
         private readonly ControllerDBContext _dbContext;
+        private readonly Connection.ConnectionController _connectionController;
 
-        public ControllerStateController(ControllerDBContext dbContext)
+        public ControllerStateController(ControllerDBContext dbContext, Connection.ConnectionController connectionController)
         {
             _dbContext = dbContext;
+            _connectionController = connectionController;
         }
 
+
+        public class ControllerName
+        {
+            public string Name { get; set; }
+            public string Version { get; set; }
+        }
+
+        [HttpGet("GetAllowedControllerState")]
+        public async Task<IResult> GetAllowedControllerState([FromQuery] ControllerName controllerName)
+        {
+            try
+            {
+                var states = _connectionController.GetAllowedState(controllerName.Name, controllerName.Version);
+                return Results.Json(states);
+            }catch(Exception e)
+            {
+                return Results.Problem();
+            }
+        }
 
         [HttpGet("GetAll")]
         public async Task<IResult> GetAllControllersState()

@@ -32,8 +32,7 @@ class DeleteControllerGroup extends React.Component{
 
     delete()
     {
-
-        this.props.params.Request.delete("/api/ControllerState/Delete/"+this.props.id).
+        this.props.params.Request.delete("api/ControllerGroup/DeleteControllerGroup/"+this.props.id).
         then((e)=>{
             console.log(e);
         })
@@ -43,14 +42,14 @@ class DeleteControllerGroup extends React.Component{
     {
         return <div>
         <Button variant="text" onClick={(e)=>this.setState({visible:true})}>
-            Удалить состояние
+            Удалить группу
         </Button>
         <Dialog 
         open={this.state.visible}
         onClose={(e)=>this.setState({visible:false})}>
             <DialogContent> 
             <Box display={"flex"} flexDirection={"column"} >
-                <Typography> Вы точно хотите удалить состояние ?</Typography>
+                <Typography> Вы точно хотите удалить группу ?</Typography>
                 <Box flexDirection={"row"}>
                     <Button onClick={(e)=>{this.delete();this.setState({visible:false}) }}>Подтвердить</Button>
                     <Button onClick={(e)=>{this.setState({visible:false})}}>Отменить</Button>
@@ -116,12 +115,13 @@ export default class ControllerGroup extends React.Component
         this.state.Request = axios.create({
             baseURL:BaseUrl,
             headers:{ 'Content-Type': 'application/json' },
+            withCredentials: true,
         })
     }
 
-    async GetControllerName()
+    async GetControllerGroup()
     {
-        this.state.Request.get("/api/ControllerGroup/GetAll").then((e)=>{
+        this.state.Request.get("/api/ControllerGroup/GetControllerGroup").then((e)=>{
             switch(e.status)
             {
                
@@ -130,7 +130,7 @@ export default class ControllerGroup extends React.Component
                     e.data.value.forEach((element)=>{
                         let tmp = {};
                         tmp.id=element.id;
-                        tmp.description= element.description;
+                        tmp.description= element.groupDescription;
                         data.push(tmp);
                     })
                     
@@ -145,13 +145,14 @@ export default class ControllerGroup extends React.Component
         })
     }
 
-    async SendNewName()
+    async SendNewGroup()
     {
-        this.state.Request.post("/api/ControllerState/Add",{
-            description:this.state.description,
+        this.state.Request.post("/api/ControllerGroup/AddControllerGroup",
+        {
+            groupDescription:this.state.description,
         }).then((e)=>{
             this.setState({description:''});
-            this.GetControllerName();
+            this.GetControllerGroup();
         })
     }
 
@@ -178,7 +179,7 @@ export default class ControllerGroup extends React.Component
                                 animateRows={true}
                                 rowData={this.state.readyData}
                                 context={{'Request':this.state.Request}}
-                                onGridReady={(e)=>{this.GetControllerName()}}
+                                onGridReady={(e)=>{this.GetControllerGroup()}}
                             />
                         </div>
                     </Grid>
@@ -205,12 +206,13 @@ export default class ControllerGroup extends React.Component
                                 </FormControl>
                                 <div>
                                     <FormControl>
-                                        <Button onClick={(e)=>this.SendNewName()}> 
+                                        <Button onClick={(e)=>this.SendNewGroup()}> 
                                             Добавить
                                         </Button>
                                     </FormControl>
                                     <FormControl>
                                         <Button onClick={(e)=>{
+
                                             this.setState({description:""});
                                         }}>
                                             Отменить
