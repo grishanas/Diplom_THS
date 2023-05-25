@@ -20,6 +20,7 @@ export default class DeleteUserRole extends React.Component{
     {
         this.state.Request.delete('/api/User/DeleteRole/'+this.props.id).then((e)=>{
             console.log(e);
+            this.props.context.refresh();
         })
     }
 

@@ -27,7 +27,7 @@ namespace backend_.Controllers.UsersControllers
 
         #region Post
 
-        [HttpPost("AddControllerGroupRole")]
+        [HttpPost("ControllerGroupRole")]
         public async Task<IResult> AddControllerRole([FromBody] RoleAndGroup roleAndGroup)
         {
             try
@@ -40,7 +40,7 @@ namespace backend_.Controllers.UsersControllers
                 return Results.Problem();
             }
         }
-        [HttpPost("AddOutputGroupRole")]
+        [HttpPost("OutputGroupRole")]
         public async Task<IResult> AddOutputRole([FromBody] RoleAndGroup roleAndGroup)
         {
             try
@@ -61,10 +61,6 @@ namespace backend_.Controllers.UsersControllers
             try
             {
                 var res = await _dbContext.GetOutputGroups();
-                foreach(var item in res)
-                {
-                    item.userRoles = null;
-                }
                 return Results.Ok(res);
             }
             catch(Exception e)
@@ -94,7 +90,7 @@ namespace backend_.Controllers.UsersControllers
 
         }
 
-        [HttpDelete("AddControllerGroupRole")]
+        [HttpDelete("ControllerGroupRole")]
         public async Task<IResult> DeleteControllerRole([FromBody] RoleAndGroup roleAndGroup)
         {
             try
@@ -107,7 +103,7 @@ namespace backend_.Controllers.UsersControllers
                 return Results.Problem();
             }
         }
-        [HttpDelete("AddOutputGroupRole")]
+        [HttpDelete("OutputGroupRole")]
         public async Task<IResult> DeleteOutputRole([FromBody] RoleAndGroup roleAndGroup)
         {
             try

@@ -31,38 +31,25 @@ namespace backend_.Controllers.MCController
             try
             {
                 var states = _connectionController.GetAllowedState(controllerName.Name, controllerName.Version);
-                return Results.Json(states);
+                return Results.Ok(states);
             }catch(Exception e)
             {
                 return Results.Problem();
             }
         }
 
-        [HttpGet("GetAll")]
-        public async Task<IResult> GetAllControllersState()
+        [HttpGet("GetAllowedOutputControllerState")]
+        public async Task<IResult> GetAllowedOutputControllerState([FromQuery] ControllerName controllerName)
         {
             try
             {
-                return Results.Json(_dbContext.controllerStates.ToList());
+                var states = _connectionController.GetAllowedOutputState(controllerName.Name, controllerName.Version);
+                return Results.Ok(states);
             }
             catch (Exception e)
             {
                 return Results.Problem();
             }
-        }
-
-        [HttpGet("GetController/{id}")]
-        public async Task<IResult> GetControllerState([FromRoute] int id)
-        {
-            try
-            {
-                return Results.Json(await _dbContext.GetState(id));
-            }
-            catch (Exception e)
-            {
-                return Results.Problem();
-            }
-
         }
 
 

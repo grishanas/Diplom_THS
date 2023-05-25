@@ -152,7 +152,10 @@ namespace backend_.DataBase.UserDB
 
         public async Task<bool> DeleteUserRole(int id)
         {
-            Roles.Remove(Roles.FirstOrDefault(x => x.id == id));
+            var role = (Roles.FirstOrDefault(x => x.id == id));
+            if (role == null)
+                return false;
+            Roles.Remove(role);
             try
             {
                 await this.SaveChangesAsync();

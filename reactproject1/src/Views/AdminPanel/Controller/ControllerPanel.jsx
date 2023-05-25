@@ -1,5 +1,5 @@
 import { AgGridReact } from "@ag-grid-community/react";
-import { Card, Typography,Grid, Paper, Box, FormControl, FormLabel, InputLabel, Input, Select, Button, MenuItem, Chip, OutlinedInput } from "@mui/material";
+import { Card, Typography,Grid, TextField,Autocomplete,Paper, Box, FormControl, FormLabel, InputLabel, Input, Select, Button, MenuItem, Chip, OutlinedInput } from "@mui/material";
 import React, { Component } from "react";
 import PopUpWindow from "../PopUpWindow";
 import axios from "axios";
@@ -8,6 +8,7 @@ import QueryPanel from "./QueryPanel";
 import { Navigate, Route, useNavigate } from "react-router"
 import { Routes} from "react-router-dom"
 import Tippy from "@tippyjs/react";
+import { People } from "@mui/icons-material";
 
 
 class Render extends React.Component{
@@ -15,6 +16,7 @@ class Render extends React.Component{
     constructor(props)
     {
         super(props);
+        console.log(props);
         
     }
 
@@ -24,98 +26,139 @@ class Render extends React.Component{
     }
 }
 
-class MultipleRender extends React.Component{
-
-    constructor(props)
-    {
-        super(props);
-        console.log(props);
-    }
-
-    render()
-    {
-        return this.props.value !=undefined && this.props.value.length>0 ? 
-        this.props.value.map((e)=>{
-            return <Button>
-                {e}
-            </Button>
-        }):<Typography>Нет групп</Typography>
-    }
-}
-
-class AddRoleToGroup extends React.Component
+class SelectRender extends React.Component
 {
+    IPV4toInt(ip)
+    {
+        
+        let parts=ip.split(".");
+        let res=0;
+
+        if(parts.length!=4)
+            return null;
+        res += parseInt(parts[0], 10) << 24;
+        res += parseInt(parts[1], 10) << 16;
+        res += parseInt(parts[2], 10) << 8;
+        res += parseInt(parts[3], 10);
+
+        return res;
+    }
+
     constructor(props)
     {
-        super(props);
-        this._text="Добавить группу";
-        this.state={Request:null};
-        this.state={visible:false,hide:true,AvalibelRoles:null}
-        if(this.props.value!==undefined)
-            this.state={hide:false};   
-        this.state.Request = axios.create({
+        super(props)
+        
+        console.log(props);
+        this.state={
+            Groups:this.props.value,
+            AllowedOutputs:[],
+            Request:null,     
+            loading:false  
+        }
+        this.state.loading=this.state.AllowedOutputs===0;
+
+        this.state.Request= axios.create({
             baseURL:BaseUrl,
             headers:{ 'Content-Type': 'application/json' },
-            withCredentials:true
+            withCredentials:true,
+        })
+        console.log(this.props);
+    }
+
+    async DeleteControllerFromGroup(Groups)
+    {
+        let diffrent = this.state.Groups.filter(i=>!Groups.includes(i))
+        .concat(Groups.filter(i=>!this.state.Groups.includes(i)));
+        console.log(diffrent);  
+        let response =  await this.state.Request.delete("/api/Controller/ControllerGroup",{
+            data:{
+            id:this.props.id,
+            group:diffrent[0].id
+            }
         });
-        
+
+        switch(response.data.statusCode)
+        {
+            case 200:{
+                
+                this.setState({Groups:Groups});
+                break;
+            }
+        }
+
     }
 
-    async Add()
+
+    async AddControllerToGroup(Groups)
     {
-        // this.state.Request.post("/api/User/AddRoleToUser",{
-        //     user:this.props.id,
-        //     userRole:role.id
-        // }).then((e)=>{console.log(e);this.props.RefreshGrid()});  
+        console.log(Groups[Groups.length-1].id);
+        console.log(this.IPV4toInt(this.props.data.id.id));
+        let response =  await this.state.Request.post("/api/Controller/AddControllerToGroup",
+        {
+            id:this.IPV4toInt(this.props.data.id.id),
+            group:Groups[Groups.length-1].id
+        });
+        console.log(response);
+        switch(response.data.statusCode)
+        {
+            case 200:
+            {
+                this.setState({Groups:Groups});
+                break;
+            }
+        }
     }
 
-
-    AddRoleToGroupContent()
-    {
-        // let tmp = this.props.Request.get("/api/Controller/GetController/"+this.props.id);
-        // let avalibleRoles= this.props.GetRoles();
-        // let count=0;
-        // return <div>
-        //     {avalibleRoles? 
-        //         avalibleRoles.map((element)=>{
-        //             let i=0;
-        //             count++;
-        //             for(;i<tmp.userRoles.length;i++)
-        //             {
-        //                 if(element.id == tmp.userRoles[i].id)
-        //                 {
-        //                     return null;
-        //                 }
-        //             }
-        //             return <button onClick={(e)=>this.addRole(element)}>{element.description}</button>
-        //         })
-        //     :
-        //     <div>
-        //         {count>0?<p> нет доступных ролей</p>:<p>Загрузка ролей</p>}
-        //     </div>}
-        // </div>
-    }
-
+    
     render()
     {
-        return <div>
-            <Tippy>
-                content={this.AddRoleToGroupContent()}
-                visible = {this.state.visible}
-                onClickOutside={(e)=>this.setState({visible:false})}
-                allowHTML={true}
-                arrow={false}
-                appendTo={document.body}
-                interactive={true}
-                placement="right"
-            <Button>
-                {this._text}
-                </Button>
-            </Tippy>
-        </div> 
+        return (
+            this.state.AllowedOutputs?
+            <Autocomplete
+                ref={ (divElement) => { this.divElement = divElement }}
+                multiple
+                loading={this.state.loading}
+                onChange={(e,value,reson)=>{
+                    switch(reson)
+                    {
+                        case 'selectOption':{
+                            this.AddControllerToGroup(value);
+                            break;
+                        }
+                        case 'removeOption':{
+                            this.DeleteControllerFromGroup(value);
+                            break;
+                        }
+                        case 'clear':{
+
+                            break;
+                        }
+                    }
+
+                }}
+                onOpen={(e)=>{
+                    let groups= this.props.context.GetAllowedGroup();
+                    console.log(groups);
+                    this.setState({AllowedOutputs:groups});
+                }}
+                isOptionEqualToValue={(option,value)=>option?.id?.toString()===value?.id?.toString()}
+                value={this.state.Groups}
+                options={this.state.AllowedOutputs}
+                getOptionLabel={(option) => option.description} 
+                renderInput={(params) => (
+                    <TextField
+                      {...params}
+                      key={params.id}
+                      variant="standard"
+                      label="Группы выходов"
+                      placeholder="Выберите группу"
+                    />
+                  )}
+            >
+                
+            </Autocomplete>:null
+        )
     }
-
-
 }
 
 class QeuryRoute extends React.Component
@@ -187,6 +230,7 @@ class ControllerPanel extends React.Component
 
     GetControllerQuery(id,context)
     {
+        
         return <QeuryRoute id={id} context={context}/>
     }
 
@@ -210,7 +254,7 @@ class ControllerPanel extends React.Component
                 cellRendererParams:{
                     'PopUp':[this.AddControllerGroup,this.GetControllerQuery]
                 }},
-                { field: 'id',
+                { field: 'ID',
                 headerName:"IPV4",
                 cellRenderer:Render
                 },
@@ -232,7 +276,8 @@ class ControllerPanel extends React.Component
                 {
                     field:"ControllerGroups",
                     headerName:"Группы контроллеров",
-                    cellRenderer:MultipleRender
+                    autoHeight: true,
+                    cellRenderer:SelectRender
                 }
             ],
             defaultColDef: {
@@ -260,7 +305,7 @@ class ControllerPanel extends React.Component
             withCredentials:true,
         })
 
-
+        this.GetControllerGroup=this.GetControllerGroup.bind(this);
 
     }
 
@@ -271,10 +316,11 @@ class ControllerPanel extends React.Component
 
     IPV4toInt(ip)
     {
+        
         let parts=ip.split(".");
         let res=0;
 
-        if(parts.length!=3)
+        if(parts.length!=4)
             return null;
         res += parseInt(parts[0], 10) << 24;
         res += parseInt(parts[1], 10) << 16;
@@ -322,8 +368,13 @@ class ControllerPanel extends React.Component
                     e.data.value.forEach((element)=>{
                         let tmp = {};
                         console.log(element);
-                        tmp.id=this.IntToIPV4(element.ipAddress);
+                        tmp.ID=this.IntToIPV4(element.ipAddress);
                         tmp.description=element.description;
+                        tmp.id={
+                            id:tmp.ID,
+                            name: element.controllerName.name,
+                            version:element.controllerName.version
+                        }
                         tmp.name = element.controllerName.name+"  "+element.controllerName.version;
                         tmp.state= element.controllerState.description;
                         tmp.ControllerGroups= element.controllerGroups;
@@ -343,26 +394,34 @@ class ControllerPanel extends React.Component
         this.GetControllerGroup();
     }
 
-    componentDidUpdate()
+
+    componentDidMount()
     {
-        console.log(this.state.ControllerName)
+        this.GetControllerGroups();
     }
 
-    async GetControllerGroup()
+    GetControllerGroup()
+    {
+        return this.state.AllowedGroup;
+    }
+
+    async GetControllerGroups()
     {
         let responce = await this.state.Request.get("/api/ControllerGroup/GetControllerGroup");
-
         console.log(responce);
         switch(responce.status)
         {
             case 200:{
-
+                console.log(responce.data.value)
                 let data =[];
                 responce.data.value.forEach((e)=>{
                     let tmp={};
                     tmp.id= e.id;
-                    tmp.description = e.description;
+                    tmp.description = e.groupDescription;
+                    data.push(tmp);
                 })
+
+                this.setState({AllowedGroup:data});
 
                 break;
             }
@@ -390,10 +449,6 @@ class ControllerPanel extends React.Component
         this.GetControllerGroup();
     }
     
-    renderClean()
-    {
-        return 
-    }
     render()
     {
         return <div>
@@ -417,7 +472,7 @@ class ControllerPanel extends React.Component
                                 animateRows={true}
                                 rowData={this.state.readyData}
                                 onGridReady={(e)=>{this.GetController()}}
-                                context={this.props}
+                                context={{"GetAllowedGroup":this.GetControllerGroup}}
                             />
                         </div>
                      </Grid>

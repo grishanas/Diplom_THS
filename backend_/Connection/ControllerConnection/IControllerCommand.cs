@@ -16,6 +16,8 @@ namespace backend_.Connection.ControllerConnection
 
         public static List<State> AllowedState { get; }
 
+        public List<State> GetAllowedState();
+
     }
 
     public interface IControllerCommandImplementation:IControllerCommand

@@ -92,8 +92,8 @@ namespace backend_.Models.controller
     {
         [Column("mco_v_value")]
         public byte[] value { get; set; }
-        [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        [Column("mcov_id")]
+
+        [Column("mc_addres")]
         public UInt32 controllerAddress { get; set; }
         [Column("mco_id")] 
         public int controllerOutputId { get; set; }

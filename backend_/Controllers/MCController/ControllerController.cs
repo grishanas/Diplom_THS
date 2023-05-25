@@ -99,7 +99,7 @@ namespace backend_.Controllers.MCController
             }
         }
 
-        [HttpPost("DeleteControllerFromGroup")]
+        [HttpDelete("ControllerGroup")]
         public async Task<IResult> DeleteControllerFromGroup([FromBody] ControllerAndGroup controller)
         {
             try

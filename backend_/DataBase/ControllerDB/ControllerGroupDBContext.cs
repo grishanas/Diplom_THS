@@ -63,7 +63,6 @@ namespace backend_.DataBase.ControllerDB
 
         }
 
-
         public async Task<List<ControllerOutputGroupUser>> GetOutputGroupsWithRole(int RoleID)
         {
             var Groups = await m2mRoleOutputs

@@ -11,6 +11,9 @@ namespace backend_.DataBase.UserDB
         public DbSet<ControllerGroupUser> controllerGroups { get; set; }
         public DbSet<ControllerOutputGroupUser> controllerOutputGroups { get; set; }
 
+        public DbSet<m2mUserRoleControllerGroup> m2mRoles { get; set; }
+        public DbSet<m2mUserRoleControllerOutputGroup> m2MUserRoleControllerOutputGroups { get; set; }
+
 
         public GroupDBContext() : base()
         {
@@ -63,11 +66,19 @@ namespace backend_.DataBase.UserDB
         public async Task<List<ControllerGroupUser>> GetControllerGroups()
         {
             var groups = await controllerGroups.ToListAsync();
+            foreach (var item in groups)
+            {
+                item.userRoles = await m2mRoles.Where(x => x.controllerGroupId == item.id).Join(userRoles, x => x.userRoleId, r => r.id, (x, r) => r).ToListAsync();
+            }
             return groups;
         }
         public async Task<List<ControllerOutputGroupUser>> GetOutputGroups()
         {
             var groups = await controllerOutputGroups.ToListAsync();
+            foreach(var item in groups)
+            {
+                item.userRoles= await m2MUserRoleControllerOutputGroups.Where(x=>x.controllerOutputGroupID==item.id).Join(userRoles,x=>x.userRoleId,r=>r.id,(x,r)=>r).ToListAsync();
+            }
             return groups;
         }
         public async Task<bool> AddRoleControllerGroup(int roleId,int controllerGroupId)
@@ -120,6 +131,7 @@ namespace backend_.DataBase.UserDB
         {
             var role = await userRoles.FirstOrDefaultAsync(x => x.id == roleId);
             var group = await controllerOutputGroups.FirstOrDefaultAsync(x => x.id == controllerOutputGroupId);
+            m2MUserRoleControllerOutputGroups.Remove(new m2mUserRoleControllerOutputGroup() { controllerOutputGroupID=group.id,userRoleId=role.id});
             role.controllerOutputGroups.Remove(group);
             try
             {

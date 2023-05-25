@@ -37,6 +37,12 @@ namespace backend_.Connection.ControllerConnection.OmronController.FinsCmd
 			new State() { IsRun = true, description = "RUN" },
 			new State(){ IsRun = false, description = "STOP" }
 		};
+
+		public List<State> GetAllowedState()
+        {
+			return AllowedState;
+
+		}
 		public State IsRun { get; set; }
 		#region
 		private event CommandListener Answer;
@@ -57,10 +63,11 @@ namespace backend_.Connection.ControllerConnection.OmronController.FinsCmd
 		/// <param name="comand"></param>
 		public FinsComand(byte[] comand)
 		{
-
+			IsRun = new State();
 		}
 		public FinsComand(UInt32 address,int id)
 		{
+			IsRun = new State();
 			this.Address = Address;
 			this.id = id;
 		}
@@ -312,6 +319,7 @@ namespace backend_.Connection.ControllerConnection.OmronController.FinsCmd
 
 		}
 
+		private bool ItWasConnect = false;
 
 		public async Task<bool> ConnectToPLC()
         {
@@ -336,10 +344,9 @@ namespace backend_.Connection.ControllerConnection.OmronController.FinsCmd
 					errorDescription = "Unknown error";
 				this._lastError = "NADS command error: " + resposNADS[15] + "(" + errorDescription + ")";
 
-				Close();
+				ItWasConnect = false;
 				return false;
 			}
-
 			if (resposNADS[8] != 0 || resposNADS[9] != 0 || resposNADS[10] != 0 || resposNADS[11] != 1)
 			{
 				this._lastError = "Error sending NADS command. "
@@ -347,15 +354,15 @@ namespace backend_.Connection.ControllerConnection.OmronController.FinsCmd
 									+ resposNADS[9].ToString() + " "
 									+ resposNADS[10].ToString() + " "
 									+ resposNADS[11].ToString();
-				Close();
-
+				ItWasConnect = false;
 				return false;
 			}
 
 			this.SA1 = resposNADS[19];
 			this.DA1 = resposNADS[23];
-			
 
+
+			ItWasConnect = true;
 			return true;
 
 		}
@@ -372,8 +379,12 @@ namespace backend_.Connection.ControllerConnection.OmronController.FinsCmd
             }
 			if (run)
 			{
-
-				return await this.Simulate();
+				if(this.ItWasConnect)
+					return await this.Simulate();
+                else
+                {
+					await this.ConnectToPLC();
+                }
 				//return await SendFrames(null);
 			}
 			return false;
@@ -384,12 +395,26 @@ namespace backend_.Connection.ControllerConnection.OmronController.FinsCmd
         {
 			var random = new Random();
 			const string chars = "0123456789";
-			int i = 0;
-			var item = new string(Enumerable.Repeat(chars, 4)
-					.Select(s => s[random.Next(s.Length)]).ToArray());
+			var item = random.Next(int.MinValue, int.MaxValue);/* new string(Enumerable.Repeat(chars, 4)
+					.Select(s => s[random.Next(s.Length)]).ToArray());*/
+			//var data = Encoding.UTF8.GetBytes(item);
 
-			var controllerData = new OutputValue() { controllerAddress = (UInt32)this.Address, controllerOutputId = this.id, value = Encoding.UTF8.GetBytes(item), DateTime = DateTime.Now };
-			Answer.Invoke(controllerData);
+			var data = new byte[4];
+            data[0] = (byte)item;
+            data[1] = (byte)((item >> 8) & 0xff);
+            data[2] = (byte)((item >> 16) & 0xff);
+            data[3] = (byte)((item >> 24) & 0xff);
+
+            Console.WriteLine(data[0]);
+			Console.WriteLine(data[1]);
+			Console.WriteLine(data[2]);
+			Console.WriteLine(data[3]);
+
+			Console.WriteLine(item);
+
+			var controllerData = new OutputValue() { controllerAddress = (UInt32)this.Address, controllerOutputId = this.id, value = data, DateTime = DateTime.Now };
+			if(Answer!=null)
+				Answer.Invoke(controllerData);
 			return true;
 		}
 		protected async Task<bool> SendFrames(byte[]? data)
@@ -436,7 +461,7 @@ namespace backend_.Connection.ControllerConnection.OmronController.FinsCmd
             {
 				this.respFinsData = await Transport.ReadData(finsResponseLen - 14);
 				var controllerData = new OutputValue() { controllerAddress = (UInt32)this.Address, controllerOutputId = this.id, value = this.respFins, DateTime = DateTime.Now };
-				Answer.Invoke(controllerData);
+				await Answer.Invoke(controllerData);
 			}
 
 			if (this.FinsResponceMainErroreCode != 0 || this.FinsResponceSubErroreCode != 0)

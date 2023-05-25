@@ -48,13 +48,45 @@ namespace backend_.Controllers.MCController
         {
             try
             {
-                return Results.Json(await _dbContext.Get(id));
+                return Results.Ok(await _dbContext.Get(id));
 
             }catch(Exception e)
             {
                 return Results.Problem();
 
             }
+        }
+
+        [HttpGet("GetOutputGroups")]
+        public async Task<IResult> GetOutputGroups()
+        {
+            try
+            {
+                var res = _dbContext.outputGroups.ToList();
+                return Results.Ok(res);
+            }catch(Exception e)
+            {
+                return Results.Problem();
+            }
+            return Results.Problem();
+        }
+        
+
+
+        [HttpPost("AddOutputGroup")]
+        public async Task<IResult> AddOutput([FromBody] string GroupDescription)
+        {
+            try
+            {
+                await _dbContext.AddOutputGroup(new ControllerOutputGroupUser() { description= GroupDescription});
+                return Results.Ok();
+            }catch(Exception E)
+            {
+                return Results.Problem();
+            }
+            return Results.Problem();
+
+
         }
 
         [HttpPost("AddControllerGroup")]
@@ -88,5 +120,20 @@ namespace backend_.Controllers.MCController
 
             }
         }
+
+        [HttpDelete("DeleteOutputGroup")]
+        public async Task<IResult> DeleteOutputGroup([FromBody] int id)
+        {
+            try
+            {
+                await _dbContext.DeleteOutputGroup(id);
+                return Results.Ok();
+            }catch(Exception e)
+            {
+                return Results.Problem();
+            }
+            return Results.Problem();
+        }
+
     }
 }

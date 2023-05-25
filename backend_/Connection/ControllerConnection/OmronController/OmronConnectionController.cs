@@ -20,6 +20,10 @@ namespace backend_.Connection.ControllerConnection.OmronController
             new State(){IsRun = false, description = "STOP"}
         };
 
+        public List<State> GetAllowedState()
+        {
+            return AllowedState;
+        }
         public static List<string> GetVersion { get; } = new List<string>()
         {
             "CJ2M-CPU33",
@@ -33,6 +37,10 @@ namespace backend_.Connection.ControllerConnection.OmronController
 
         public List<string> AllowedCommand { get; private set; } = new List<string>();
         public State IsRun { get; set; }
+
+        public OmronConnectionController()
+        {
+        }
 
         public OmronConnectionController(Models.controller.Controller controller)
         {
@@ -51,6 +59,15 @@ namespace backend_.Connection.ControllerConnection.OmronController
             connect.SetIpAddress(address, port);
         }
 
+        public void SetState(State state)
+        {
+            lock(this.IsRun)
+            {
+                this.IsRun.description = state.description;
+                this.IsRun.IsRun = state.IsRun;
+                Monitor.PulseAll(this.IsRun);
+            }
+        }
 
         public IControllerCommand? GetCommand(string OutputId)
         {
@@ -65,22 +82,27 @@ namespace backend_.Connection.ControllerConnection.OmronController
             lock(this.IsRun)
             {
                 this.IsRun.IsRun = false;
+                Monitor.PulseAll(this.IsRun);
             }
         }
 
         public async Task Start()
         {
-            lock(this.IsRun)
+            while (true)
             {
-                this.IsRun.IsRun = true;
-            }
-            while (this.IsRun.IsRun)
-            {
-                foreach(var cmd in controllerCommand)
+                lock (this.IsRun)
+                {
+                    while (!this.IsRun.IsRun)
+                        Monitor.Wait(this.IsRun);
+                    
+                }
+
+
+                foreach (var cmd in controllerCommand)
                 {
                     var res = await cmd.Value.ExecuteCommand();
                 }
-                
+                Thread.Sleep(1000);
             }
         }
 

@@ -101,6 +101,43 @@ namespace backend_.DataBase.ControllerDB
         }
 
 
+        private Task<ControllerOutputGroup?> GetControllerOutputGroup(int id)
+        {
+            return controllerOutputGroups.FirstOrDefaultAsync(x => x.id == id);
+        }
+        public async Task<List<ControllerOutputGroup>> GetControllerOutputGroups(UInt32 address, int OutputId)
+        {
+            var group = await m2mControllersOutputGroups.Where(x => x.controllerID == address && x.controllerOutputID== OutputId)
+                .Join(controllerOutputGroups, x => x.controllerOutputGroupID, R => R.id, (x, R) => R).ToListAsync();
+            return group;
+        }
+        public async Task<bool> AddControllerOutputToGroup(UInt32 address,int OutputId,int outputGroup)
+        {
+
+            var outputGroups = m2mControllersOutputGroups.Where(x => x.controllerID == address && x.controllerOutputID == OutputId);
+            if (outputGroups.FirstOrDefault(x => x.controllerOutputGroupID == outputGroup)!=null)
+                return false;
+            m2mControllersOutputGroups.Add(new m2mControllerOutputGroup() { controllerID = address, controllerOutputID = OutputId, controllerOutputGroupID = outputGroup });
+            this.SaveChanges();
+            return true;
+        }
+
+        public async Task<bool> DeleteControllerOutputFromGroup(UInt32 address, int OutputId, int outputGroup)
+        {
+            var output = await this.GetControllerOutput(address, OutputId);
+            output.m2mOutputGroups = m2mControllersOutputGroups.Where(x => x.controllerID == address && x.controllerOutputID == OutputId).ToList();
+            var deleteGroup = this.controllerOutputGroups.FirstOrDefault(x => x.id == outputGroup);
+            if (deleteGroup == null)
+                return false;
+            output.outputGroups.Remove(deleteGroup);
+            output.m2mOutputGroups.Remove(output.m2mOutputGroups.FirstOrDefault(x=> x.controllerID == address && x.controllerOutputID == OutputId && x.controllerOutputGroupID==outputGroup));
+            outputs.Update(output);
+
+            this.SaveChanges();
+            return true;
+
+        }
+
         public async Task<List<ControllerOutput>> GetControolerOutputs(int outputGroupID)
         {
             var outputs =await m2mControllersOutputGroups
@@ -130,6 +167,7 @@ namespace backend_.DataBase.ControllerDB
         public async Task<bool> AddQeuryToController(UInt32 address,int id,string Qeury)
         {
             var output = await GetControllerOutput(address, id);
+            output.outputGroups = null;
             output.Query = new ControllerQuery() { id = 0, query = Qeury };
             outputs.Update(output);
             try
@@ -183,6 +221,12 @@ namespace backend_.DataBase.ControllerDB
             var res = outputStates.ToList();
             return res;
         }
+
+        public async Task<OutputState?> GetOutputState(string description)
+        {
+            var res = await outputStates.FirstOrDefaultAsync(x => x.description == description);
+            return res;
+        }
         public async Task<OutputState?> GetOutputState(int id)
         {
             var res = await outputStates.FirstOrDefaultAsync(x => x.id == id);
@@ -224,16 +268,9 @@ namespace backend_.DataBase.ControllerDB
 
         public async Task<bool> AddControllerOutput(ControllerOutput output)
         {
-            var controller = await GetController(output.controllerAddress);
-            if (controller == null)
-                return false;
-            controller.m2mControllerGroups = null;
-            controller.controllerGroups = null;
-            output.id = 0;
+            var groups = output.outputGroups;
+            output.outputGroups = null;
             outputs.Add(output);
-
-/*            controller.outputs.Add(output);
-            controllers.Update(controller);*/
             try
             {
                 this.SaveChanges();
@@ -241,6 +278,10 @@ namespace backend_.DataBase.ControllerDB
             {
                 throw;
             }
+            groups.ForEach(async (e) =>
+            {
+                await this.AddControllerOutputToGroup(output.controllerAddress, (int)output.id, e.id);
+            });
             return true;
         }
 
@@ -301,16 +342,7 @@ namespace backend_.DataBase.ControllerDB
 
         public async Task<bool> AddControllerToGroup(int GroupID,UInt32 address)
         {
-            var controller= await GetController(address);
-            var Groups = await GetControllerGroups(address);
-            if (Groups.FirstOrDefault(x => x.id == GroupID) != null)
-                return false;
-            var newGroup= await GetControllerGroup(GroupID);
-            if (newGroup == null)
-                return false;
-            controller.controllerGroups = Groups;
-            Groups.Add(newGroup);
-            controllers.Update(controller);
+            m2mControllers.Add(new m2mControllerControllerGroup() { ControllerID = address, ControllerGroupID = GroupID });
             try
             {
                 this.SaveChanges();
@@ -323,14 +355,7 @@ namespace backend_.DataBase.ControllerDB
 
         public async Task<bool> DeleteControllerFromGroup(int GroupID, UInt32 address)
         {
-            var controller=await GetController(address);
-            var Groups = await GetControllerGroups(address);
-            var group = Groups.FirstOrDefault(x => x.id == GroupID);
-            if (group == null)
-                return false;
-            Groups.Remove(group);
-            controller.controllerGroups = Groups;
-            controllers.Update(controller);
+            m2mControllers.Remove(new m2mControllerControllerGroup() { ControllerID = address, ControllerGroupID = GroupID });
             try
             {
                 this.SaveChanges();
@@ -410,6 +435,20 @@ namespace backend_.DataBase.ControllerDB
         public async Task<bool> DeleteController(UInt32 id)
         {
             controllers.Remove(controllers.First(x => x.IpAddress == id));
+            try
+            {
+                this.SaveChanges();
+            }
+            catch (Exception e)
+            {
+                throw;
+            }
+            return true;
+        }
+
+        public async Task<bool> DeleteControllerOutput(UInt32 address,int id)
+        {
+            outputs.Remove(outputs.First(x=>x.controllerAddress==address && x.id==id));
             try
             {
                 this.SaveChanges();

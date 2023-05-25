@@ -5,7 +5,7 @@ using backend_.Models.controller;
 namespace backend_.Connection.ControllerConnection
 {
 
-    public delegate void CommandListener(OutputValue controllerData);
+    public delegate Task CommandListener(OutputValue controllerData);
 
 
     public class State
@@ -21,6 +21,7 @@ namespace backend_.Connection.ControllerConnection
             this.IsRun = false;          
         }
     }
+
     public interface IControllerConnection
     {
         public UInt32 id { get; }
@@ -41,6 +42,9 @@ namespace backend_.Connection.ControllerConnection
         public static List<string> GetVersion { get; }
         public static string GetName { get; }
         public static List<State> AllowedState { get; }
+
+        public List<State> GetAllowedState();
+        public void SetState(State state);
 
     }
 }

@@ -27,7 +27,7 @@ namespace backend_.Controllers.UsersControllers
             try
             {
                 var res = await _dbContext.GetAll();
-                return Results.Json(res);
+                return Results.Ok(res);
             }
             catch (Exception e)
             {
@@ -41,7 +41,7 @@ namespace backend_.Controllers.UsersControllers
         {
             try
             {
-                return Results.Json(await _dbContext.Get(id));
+                return Results.Ok(await _dbContext.Get(id));
             }
             catch (Exception e)
             {
@@ -56,7 +56,7 @@ namespace backend_.Controllers.UsersControllers
         {
             try
             {
-                return Results.Json(_dbContext.Roles.ToList());
+                return Results.Ok(_dbContext.Roles.ToList());
             }
             catch (Exception e)
             {
@@ -69,7 +69,7 @@ namespace backend_.Controllers.UsersControllers
         {
             try
             {
-                return Results.Json(await _dbContext.GetRole(id));
+                return Results.Ok(await _dbContext.GetRole(id));
             } catch (Exception e)
             {
 

@@ -4,7 +4,6 @@ using backend_.DataBase.UserDB;
 using backend_.Connection;
 using Microsoft.AspNetCore.Authorization;
 using backend_.AuthorizationLogic;
-using backend_.Connection.UserConnection;
 using backend_.DataBase.ControllerDB;
 using backend_.Models.controller;
 
@@ -15,49 +14,17 @@ namespace backend_.Controllers.ValueControllers
     public class ValueController : ControllerBase
     {
         private readonly AuthorizationLogic.Authorization _authorization;
-        private readonly UserConnectionController _userConnect;
         private readonly IServiceScopeFactory _serviceScopeFactory;
         private readonly Connection.ConnectionController _connectionController;
 
-        public ValueController(IConfiguration configuration,UserConnectionController userConnect, IServiceScopeFactory serviceScopeFactory,Connection.ConnectionController connectionController)
+        public ValueController(IConfiguration configuration,IServiceScopeFactory serviceScopeFactory,Connection.ConnectionController connectionController)
         {
             _authorization = new AuthorizationLogic.Authorization(configuration);
-            _userConnect = userConnect;
             _serviceScopeFactory = serviceScopeFactory;
             _connectionController = connectionController;
         }
 
-        [HttpGet("StartListen")]
-        [Authorize]
-        public async Task<IResult>? StartListen()
-        {
-            var userCookie = Request.Cookies.ToList();
-            var userID = _authorization.ValidateJWT(userCookie);
-            if (userID == null)
-                return Results.Problem();
 
-            Response.ContentType = "text/plain";
-
-            var Outputs = await _userConnect.AddUser((int)userID, Response.BodyWriter,Request.BodyReader);
-            foreach (var item in Outputs)
-            {
-                _userConnect.userConnction.TryGetValue((UInt32)userID, out var User);
-                _connectionController.AddUserToControllerOutput(item.controllerAddress, item.id, User);
-            }
-            while(true)
-            {
-                Thread.Sleep(1000);
-            }
-            return null;
-            //return Results.Ok();
-        }
-
-        [HttpPost("StopListen")]
-        [Authorize]
-        public async Task StopListen()
-        {
-
-        }
 
 
         public class OutputId
@@ -70,9 +37,6 @@ namespace backend_.Controllers.ValueControllers
             public DateTime startTime { get; set; }
             public DateTime endTime { get; set; }
         }
-
-
-
 
 
         private async Task<ControllerOutput> GetOutput(UInt32 address, int outputId)

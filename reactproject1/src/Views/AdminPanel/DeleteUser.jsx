@@ -56,10 +56,9 @@ export default class DeleteUser extends React.Component
                 appendTo={document.body}
                 interactive={true}
                 placement="right">
-                <button onClick={(e)=>{this.state.visible ? this.setState({visible:false}):this.setState({visible:true})}}>
+                <Button onClick={(e)=>{this.state.visible ? this.setState({visible:false}):this.setState({visible:true})}}>
                     {this._text}
-                </button>    
+                </Button>    
             </Tippy>
-
     }
 }

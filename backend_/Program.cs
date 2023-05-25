@@ -58,9 +58,9 @@ namespace backend_
             builder.Services.AddHostedService<ConnectionController>(
                 services => services.GetService<ConnectionController>()
                 );
-            builder.Services.AddSingleton<backend_.Connection.UserConnection.UserConnectionController>();
 
-           
+
+            builder.Services.AddSignalR();
         }
 
         public static void Main(string[] args)
@@ -144,6 +144,8 @@ namespace backend_
 
             app.UseHttpsRedirection();
             app.MapControllers();
+
+            app.MapHub<backend_.Controllers.ValueControllers.ValueControll>("/value");
 
 
             app.Run();

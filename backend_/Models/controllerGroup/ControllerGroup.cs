@@ -84,9 +84,9 @@ namespace backend_.Models.controllerGroup
         [Column("mco_g_description")]
         public string description { get; set; }
 
-        public List<UserRole1> userRoles { get; set; } = new List<UserRole1>();
+        public List<UserRole1>? userRoles { get; set; } = new List<UserRole1>();
 
-        public List<m2mUserRoleControllerOutputGroup> m2mUserRoleControllerOutputGroups = new List<m2mUserRoleControllerOutputGroup>();
+        public List<m2mUserRoleControllerOutputGroup>? m2mUserRoleControllerOutputGroups = new List<m2mUserRoleControllerOutputGroup>();
     }
 
     [Table("microcontroller_group")]
