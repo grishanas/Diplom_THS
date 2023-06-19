@@ -32,7 +32,6 @@ export default class AdminPage extends React.Component
     {
         return(
             <>
-            {/* <ValueTableView/> */}
             <Routes>
                 <Route path="/Users/*" element={<Users />}/>
                 <Route path="/Roles/*" element={<UserRolePanel />}/>

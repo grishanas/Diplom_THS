@@ -1,0 +1,266 @@
+body,html{
+    width: 100% !important;
+    height: 100% !important;
+    font-weight: 400;
+    font-family: sans-serif;
+}
+
+a{
+    text-decoration: none;
+}
+
+ul,ol {
+    list-style: none;
+    padding: 0;
+}
+
+.container{
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+/*==========================================*/
+/* Navigation */
+
+#menu{
+    padding: 0px;
+    background-color: rgb(246, 255, 0);
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
+    overflow: hidden;
+    position: fixed;
+    top: 0;
+    width: 100%;
+}
+
+
+
+.navigationTabBar{
+    display: flex;
+    justify-content:space-between;
+}
+
+.NavigationTitle{
+    justify-content: start;
+    display: flex;
+    padding-left: 10px;
+    padding-right: 10px;
+
+}
+
+.NavigationTitle > a {
+    color: black;
+    text-decoration: none;
+}
+
+.nav-bar-list{
+    display: flex;
+}
+
+.nav-bar-list a{
+    position: relative;
+    color: black;
+    font-size: 24px;
+    text-decoration: none;
+    text-transform: uppercase;
+    padding: 8px 2px;
+    border-radius: 0;
+    margin: 9px 20px 0;
+  
+
+}
+
+.nav-bar-list > li > a:after{
+    content:'';
+    position:absolute;
+    width:0%;
+    height: 4px;
+    left:0;
+    bottom: 0;
+    background: linear-gradient(to right, #6372ff 0%, #5ca9fb 100%) ;
+    transition: width 0.5s ease-out;
+ 
+}
+
+.nav-bar-list > li > a:hover::after, .nav-bar-list > li > a:focus::after{
+    width:100%;
+    
+}
+
+
+.nav-bar-right-part{
+    display: flex;
+    padding-right: 30px;
+    align-items: center;   
+    justify-content: space-around;
+}
+
+
+.nav-bar-SocialMedia > a > img {
+    background-color: azure;
+    margin-left: 5px;
+    border-radius: 8px;
+}
+
+
+/*==========================*/
+/*  Header  */
+
+.Header{
+    max-height: 800px;
+    height: 800px;
+    background-color:rgb(0, 0, 0);
+    background-repeat: round;    
+}
+
+
+.intro {
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 800px;
+}
+
+.overlay{
+    width: 30%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: rgb(255, 255, 255);
+}
+
+.overlay > h1{
+    font-size:36px;
+    font-weight: 700;
+}
+
+.overlay > p{
+    font-size:24px;
+    font-weight: 400;
+}
+
+/*=====*/
+/* Classes */
+
+.Classes{
+    min-height: 800px;
+    justify-content: center;
+    align-items: center;
+}
+
+.ClassesDescript{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+.Class-img{
+    height: 40px;
+    width: 40px;
+    /*background-color: rgb(5, 5, 86);
+    stroke:
+    */
+    margin-top: 10px;
+    border-radius: 5px;
+    background-color: #5ca9fb;
+
+}
+
+.ClassesGrid{
+    width:100%;
+    display: flex;
+    align-items: center;
+    justify-content:center;
+}
+
+.Class-Content-Text{
+    display: flex;
+    flex-direction: column;
+
+}
+
+.Class-Content{
+    padding-left: 20px;
+}
+
+.ClassGrid-item{
+    
+    border: 0px;
+}
+
+
+
+
+/*=====================*/
+/* Educators */
+
+.EducatorsDescript{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.EducatorsGrid{
+    width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.Educators{
+    padding-bottom: 40px;
+}
+
+.EducatorsGrid-content > img{
+    width:100%;
+    height:300px;
+}
+.EducatorsGrid-content-text{
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+}
+
+
+
+
+
+/*=======================*/
+/*Footer*/
+
+.Footer{
+    min-height:200px;
+    background-color: #12223c ;
+}
+
+
+
+
+
+
+
+
+/*========================*/
+/*Assistent*/
+
+.Assistent{
+    display: block;
+    position: fixed;
+    height: 300px;
+    width: 300px;
+    bottom:200px; 
+    right: 200px;
+    border-radius: 50%;
+}
+
+.Assistent-popUpWindow{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.Assistent-popUpWindow-ref{
+    display: flex;
+    flex-direction: row;
+}
+
+

@@ -1,46 +1,41 @@
 import axios from "axios";
 import React from "react";
 import { BaseUrl } from "../../App";
+import { Route, Routes } from "react-router";
+import LogOut from "../../Pages/LogOut";
+import UserValue from "./UserValue";
 
 
-
+const DropDown =[{url:"/User/LogOut",value:"Выход"}]; 
 
 export default class ControllerGrid extends React.Component
 {
     constructor(props)
     {
         super(props)
-        console.log("controllerGrid");
         this.state={Request:null}
         this.state.Request= axios.create({
             baseURL:BaseUrl,
             headers:{ 'Content-Type': 'application/json' },
             responseType: 'stream'
         })
+        console.log(props);
+        this.props.ChangeDropDownMenu(DropDown); 
     }
 
-    async GetControllerData()
+    componentWillUnmount()
     {
-        let response = await fetch(BaseUrl+"/api/empty");
-        let streamReader= response.body.getReader();
-
-        while(true)
-        {
-            const {done, value} = await streamReader.read();
-
-            if (done) {
-              break;
-            }
-          
-            console.log(value)
-          }
+        this.props.ChangeDropDownMenu(undefined);
     }
 
     render()
     {
-        this.GetControllerData();
+        console.log('sa');
         return <div>
-
+            <Routes>
+                <Route path="/LogOut/*" element={<LogOut />} />
+                <Route path="/*" element={<UserValue/>} />
+            </Routes>
         </div>
     }
 }

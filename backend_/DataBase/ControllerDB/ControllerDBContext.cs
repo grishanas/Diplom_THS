@@ -266,6 +266,24 @@ namespace backend_.DataBase.ControllerDB
             return true;
         }
 
+        public async Task<List<ControllerOutput>> GetControllerOutputsWithOutputGroup(int OutputGroupId)
+        {
+
+            var output = (from m2m in this.m2mControllersOutputGroups 
+                          join o in this.outputs 
+                          on new {id= m2m.controllerID,Outid=m2m.controllerOutputID } equals new { id=o.controllerAddress, Outid=o.id } where m2m.controllerOutputGroupID == OutputGroupId select o).ToList();
+            var outputs = new List<ControllerOutput>();
+            foreach (var item in output)
+            {
+                var tmp = (await this.GetControllerOutput(item.controllerAddress, item.id));
+                tmp.controller = null;
+                tmp.outputState.controllers = null;
+                outputs.Add(tmp);
+            }
+
+            return outputs;
+        }
+
         public async Task<bool> AddControllerOutput(ControllerOutput output)
         {
             var groups = output.outputGroups;
@@ -393,18 +411,28 @@ namespace backend_.DataBase.ControllerDB
         {
             var controller = new Controller(userController);
             controller.controllerName = await this.controllersName
-                .FirstOrDefaultAsync(x => x.name==userController.controllerName.Name&&
-                x.version==userController.controllerName.version);
-            if(controller.controllerName==null)
+                .FirstOrDefaultAsync(x => x.name == userController.controllerName.Name &&
+                x.version == userController.controllerName.version);
+            if (controller.controllerName == null)
             {
                 await this.AddControllerName(userController.controllerName.Name, userController.controllerName.version);
                 controller.controllerName = this.controllersName
                     .First(x => x.name == userController.controllerName.Name &&
                     x.version == userController.controllerName.version);
             }
-            controller.ControllerState = this.controllerStates.FirstOrDefault(x => x.id == userController.ControllerState);
-            if(controller.ControllerState==null)
-                return false;
+            controller.ControllerState = this.controllerStates.FirstOrDefault(x => x.Description == userController.ControllerState);
+            if (controller.ControllerState == null)
+            {
+                if(userController.ControllerState != null)
+                {
+                    await this.AddState(userController.ControllerState);
+                    controller.ControllerState = this.controllerStates.FirstOrDefault(x => x.Description == userController.ControllerState);
+                }
+                else
+                {
+                    return false;
+                }
+            }
             controllers.Add(controller);
             try
             {
@@ -563,25 +591,6 @@ namespace backend_.DataBase.ControllerDB
                 throw;
             }
             return true;
-        }
-
-        public async Task<bool> PatchControllerName(ControllerName state)
-        {
-            var ControllerName = await this.GetControllerName(state.id);
-            ControllerName.controllers = await this.GetControllersAsync(ControllerName);
-            ControllerName.name = state.name;
-            ControllerName.version = state.version;
-            controllersName.Update(ControllerName);
-            try
-            {
-                this.SaveChanges();
-            }
-            catch (Exception e)
-            {
-                throw;
-            }
-            return true;
-
         }
 
 

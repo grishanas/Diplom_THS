@@ -26,7 +26,7 @@ namespace backend_.Connection
     {
         public IControllerConnection Create(UserController userController)
         {
-            return new OmronConnectionController(userController.IpAddress, userController.IpPort);
+            return new OmronConnectionController((UInt32)userController.IpAddress, userController.IpPort);
         }
 
         public IControllerConnection Create()
@@ -67,21 +67,15 @@ namespace backend_.Connection
             return null;
         }
     }
-
-
     public class NameAndVersion
     {
         public string name { get; set; }
         public List<string> version { get; set; } = new List<string>();
     }
-
-
-
-    public class ConnectionController : BackgroundService,IDisposable
+    public class ConnectionController : BackgroundService, IDisposable
     {
         private ConcurrentDictionary<UInt32, IControllerConnection> _taskManager = new ConcurrentDictionary<UInt32, IControllerConnection>();
         private readonly IServiceScopeFactory _serviceScopeFactory;
-
         private async Task Initialize()
         {
             ControllerDBContext controllerDB;
@@ -91,25 +85,22 @@ namespace backend_.Connection
                 var controllers = await controllerDB.GetAllControllers();
                 foreach (var controller in controllers)
                 {
-
                     var controllerConnection = ControllerFactory.Create(new UserController()
                     {
                         controllerName = new UserControllerName() { Name = controller.controllerName.name, version = controller.controllerName.version },
-                        IpAddress = controller.IpAddress,
+                        IpAddress = (int)controller.IpAddress,
                         IpPort = controller.IpPort
                     });
-
                     var res = _taskManager.TryAdd(controller.IpAddress, controllerConnection);
-                    if(res)
+                    if (res)
                     {
-                        
                         foreach (var command in controller.outputs)
                         {
-                            controllerConnection.AddCommand(command.id.ToString(), command.Query!=null?command.Query.query:null);
-
+                            controllerConnection.AddCommand(command.id.ToString(), command.Query != null ? command.Query.query : null);
                             var ControllerCommand = controllerConnection.GetCommand(command.id.ToString());
-                            var CommandState = ControllerCommand.GetAllowedState().FirstOrDefault(x=>x.description==command.outputState.description);
-                            if(CommandState != null)
+                            var CommandState = ControllerCommand.GetAllowedState().FirstOrDefault(x => x.description == command.outputState.description);
+                            ControllerCommand.Address =(int)controller.IpAddress; 
+                            if (CommandState != null)
                             {
                                 ControllerCommand.SetState(CommandState);
                                 ControllerCommand.SetAnswerListener(this.AnswerListener);
@@ -121,11 +112,11 @@ namespace backend_.Connection
                         }
                         var states = controllerConnection.GetAllowedState();
                         var ControllerState = states.FirstOrDefault(x => x.description == controller.ControllerState.Description);
-                        if(ControllerState!=null)
+                        if (ControllerState != null)
                         {
                             controllerConnection.SetState(ControllerState);
                         }
-                        controllerConnection.Start();
+                        new Task(()=>controllerConnection.Start()).Start();
                     }
                 }
             }
@@ -134,14 +125,14 @@ namespace backend_.Connection
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             await Initialize();
-            
+
         }
 
 
-        public bool SetOutputState(string state,UInt32 address,int id)
+        public bool SetOutputState(string state, UInt32 address, int id)
         {
             _taskManager.TryGetValue(address, out var controller);
-            if(controller==null)
+            if (controller == null)
                 return false;
             var command = controller.GetCommand(id.ToString());
             if (command == null)
@@ -154,7 +145,7 @@ namespace backend_.Connection
             return true;
         }
 
-        public List<State> GetAllowedState(string ControllerName,string controllerVersion)
+        public List<State> GetAllowedState(string ControllerName, string controllerVersion)
         {
 
             var NamesAndVersions = ControllerFactory.some;
@@ -180,7 +171,10 @@ namespace backend_.Connection
 
             public OutValue(OutputValue value)
             {
-                this.value = (UInt32)(value.value[0] + ((int)value.value[1] << 8) + ((int)value.value[2] << 16) + ((int)value.value[3] << 24));
+                for(int i =0; i<value.value.Length;i++)
+                {
+                    this.value +=(UInt32)value.value[i] << (i * 8);
+                }
                 controllerAddress = value.controllerAddress;
                 controllerOutputId = value.controllerOutputId;
                 DateTime = value.DateTime;
@@ -248,23 +242,23 @@ namespace backend_.Connection
 
         public List<string> GetAllCommands(UInt32 address)
         {
-            var controller = _taskManager.Where(x=>x.Value.id== address).FirstOrDefault();
+            var controller = _taskManager.Where(x => x.Value.id == address).FirstOrDefault();
             var comand = controller.Value.AllowedCommand;
             return comand;
         }
 
-        public Dictionary<string,List<string>> GetAllowedController()
+        public Dictionary<string, List<string>> GetAllowedController()
         {
             var version = ControllerFactory.some.ToList();
             var Dict = new Dictionary<string, List<string>>();
-            foreach( var item in version)
+            foreach (var item in version)
             {
                 Dict.Add(item.Key.Name, item.Key.version);
             }
             return Dict;
         }
 
-        public bool RemoveCommand(UInt32 address,int id)
+        public bool RemoveCommand(UInt32 address, int id)
         {
             _taskManager.TryGetValue(address, out var Controller);
             if (Controller == null)
@@ -273,13 +267,13 @@ namespace backend_.Connection
             return res;
         }
 
-        public bool SetCommand(UInt32 address,int id,string command)
+        public bool SetCommand(UInt32 address, int id, string? command)
         {
             _taskManager.TryGetValue(address, out var Controller);
             if (Controller == null)
                 return false;
             var res = Controller.AddCommand(id.ToString(), command);
-            if(res == false)
+            if (res == false)
             {
                 _taskManager.TryRemove(address, out var Oldcontroller);
             }

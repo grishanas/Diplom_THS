@@ -28,13 +28,15 @@ export default class QueryDialog extends React.Component
     async GetAlllowedQuerys()
     {
         let response = await this.state.Request.get("/api/ControllerOutput/GetAllAllowQeurys?address="+this.props.id.controllerAddress);
-        console.log(response.data.value);
+        console.log(response.data);
         switch(response.data.statusCode)
         {
             case 200:{
-                let queris=JSON.parse(response.data.value   );
+                let queris=JSON.parse(response.data.value);
+                console.log(queris);
                 let tmp=[];
                 tmp.push(queris);
+                console.log(tmp);
                 this.setState({AllowedQueris:tmp});
                 break;
             }
@@ -45,6 +47,7 @@ export default class QueryDialog extends React.Component
     async GetQuery()
     {
         let response = await this.state.Request.get("/api/ControllerOutput/Output/"+this.props.id.id +"?adrress="+this.props.id.controllerAddress);
+        console.log(response.data.value);
         switch(response.data.statusCode)
         {
             case 200:{
@@ -86,6 +89,7 @@ export default class QueryDialog extends React.Component
                         <Typography>{this.state.shift}</Typography>
                     </Box>
                 </Box>
+                {console.log(this.state)}
                 {this.state.AllowedQueris?
                 <Box flexDirection={"column"} display={"flex"}>
                     <Select

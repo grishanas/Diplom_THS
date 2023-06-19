@@ -2,11 +2,13 @@
 using Microsoft.AspNetCore.Mvc;
 using backend_.Models.controllerGroup;
 using backend_.DataBase.ControllerDB;
+using Microsoft.AspNetCore.Authorization;
 
 namespace backend_.Controllers.MCController
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class ControllerGroupController : ControllerBase
     {
 

@@ -8,7 +8,7 @@ namespace backend_.Controllers.UsersControllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [AllowAnonymous]
+    [Authorize]
     public class GroupController : ControllerBase
     {
         private readonly GroupDBContext _dbContext;

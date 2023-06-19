@@ -27,6 +27,7 @@ namespace backend_.Connection.ControllerConnection.OmronController
         public static List<string> GetVersion { get; } = new List<string>()
         {
             "CJ2M-CPU33",
+            "CJ2M-CPU32",
         };
         public static string GetName { get; } = "OMRON";
 
@@ -53,7 +54,7 @@ namespace backend_.Connection.ControllerConnection.OmronController
         {
             this.id = address;
             this.IsRun = new State();
-            AllowedCommand = FinsComand.allowedCommand;
+            AllowedCommand = FinsCommand.allowedCommand;
 
             connect = new TCPClient();
             connect.SetIpAddress(address, port);
@@ -111,8 +112,9 @@ namespace backend_.Connection.ControllerConnection.OmronController
         #region FinsComand
         public bool AddCommand(string OutputId,string? command)
         {
-            var FinsCommand = new FinsComand(this.id,int.Parse(OutputId));
-            if(command != null)
+            var FinsCommand = new FinsCommand(this.id,int.Parse(OutputId));
+            FinsCommand.Address = (int)this.id;
+            if (command != null)
                 FinsCommand.SetCommand(command);
             FinsCommand.SetTransportLaeyr(this.connect);
             controllerCommand.TryAdd(OutputId, FinsCommand);

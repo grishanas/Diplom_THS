@@ -63,6 +63,11 @@ namespace backend_.DataBase.UserDB
                 });
         }
 
+        public async Task<List<ControllerOutputGroupUser>> GetOutputGroups(int UserRoleID)
+        {
+            var groups = await m2MUserRoleControllerOutputGroups.Where(x => x.userRoleId == UserRoleID).Join(controllerOutputGroups, x => x.controllerOutputGroupID, r => r.id, (x, r) => r).ToListAsync();
+            return groups;
+        }
         public async Task<List<ControllerGroupUser>> GetControllerGroups()
         {
             var groups = await controllerGroups.ToListAsync();

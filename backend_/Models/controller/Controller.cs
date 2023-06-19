@@ -13,11 +13,11 @@ namespace backend_.Models.controller
     }
     public class UserController
     {
-        public UInt32 IpAddress { get; set; }
+        public int IpAddress { get; set; }
         public string? description { get; set; }
 
         public int IpPort { get; set; }
-        public int? ControllerState { get; set; }
+        public string ControllerState { get; set; }
         public string? Name { get; set; }
         public UserControllerName controllerName { get; set; }
     }

@@ -51,6 +51,7 @@ export default class Aythorize extends React.Component
                         }
                         else if(e.data.value=='User')
                         {
+                            
                             this.setState({redirect:true,RedirectPath:"/User"})  
                             let navigate = new useNavigate();
                             navigate(this.state.RedirectPath,{replace:true});
@@ -84,7 +85,7 @@ export default class Aythorize extends React.Component
                 width:'100%',
                 height:'100%',
             }}>
-                <Card sx={{display:'flex',width:'400px',height:'100%'}}>
+                <Card sx={{display:'flex',width:'400px',height:'100%', margin:"0 auto"}}>
                     <Grid                 
                         display={'flex'}   
                         container

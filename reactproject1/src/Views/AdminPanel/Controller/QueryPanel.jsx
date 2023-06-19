@@ -140,7 +140,7 @@ class SelectRender extends React.Component
             data:{
             ipAddress:this.props.data.id.controllerAddress,
             outputId:this.props.data.id.id,
-            groupId:diffrent[0].id,
+            groupId:diffrent[0].id
             }
         });
 
@@ -324,9 +324,10 @@ export default class QueryPanel extends React.Component
     async ChangeState(id,value)
     {
       console.log(id);
+      console.log(value)
       let response = await this.state.Request.post("/api/ControllerOutput/SetOutputState",{
-        outputId:id.OutputId,
-        address:id.ip,
+        outputId:id.id,
+        address:id.controllerAddress,
         stateDescription:value
       })
   
@@ -472,8 +473,6 @@ export default class QueryPanel extends React.Component
         let parts=ip.split(".");
         let res=0;
 
-        console.log(parts.length);
-
         if(parts.length!=4)
             return null;
         res += parseInt(parts[0], 10) << 24;
@@ -488,10 +487,11 @@ export default class QueryPanel extends React.Component
     async GetOutput()
     {
         this.GetAllowedOutputGroups()
+        this.GetAllowedState();
         console.log(this.state);
         let id = this.IPV4toInt(this.props.id.id);
         console.log(id);
-        let responce = await this.state.Request.get("/api/ControllerOutput/Outputs?address="+id);
+        let responce = await this.state.Request.get("/api/ControllerOutput/Outputs?adrress="+id);
         switch(responce.status)
         {
             case 200:
@@ -516,6 +516,7 @@ export default class QueryPanel extends React.Component
                     });
                     data.push(tmp);
                 })
+                console.log(data);
                 this.setState({readyData:data});
                 break;
             }
@@ -531,6 +532,7 @@ export default class QueryPanel extends React.Component
     async AddOutput()
     {
 
+
         let state= this.state.AllowedOutputState.find(x=>x.description===this.state.OutputState);
         console.log(state);
         let response = await this.state.Request.post("/api/ControllerOutput/Output",{
@@ -538,9 +540,6 @@ export default class QueryPanel extends React.Component
             controllerAddress:this.IPV4toInt(this.props.id.id),
             name:this.state.OutputName,
             description:this.state.OutputDescription,
-            outputGroups:this.state.groups,
-            outputStateId:state.id,
-            outputState:state
         });
 
         console.log(response);

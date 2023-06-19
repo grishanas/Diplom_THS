@@ -8,7 +8,8 @@ import AdminPage from './Views/AdminPanel/MainAdmin';
 import ControllerGrid from './Views/UserPanel/controllerGrid';
 
 export const BaseUrl="https://localhost:8977";
-const Headers= [{url:"/AddController",value:"A"},{url:"B",value:"B"},{url:"C",value:"C"}];
+const Headers=[];
+//  [{url:"/AddController",value:"A"},{url:"B",value:"B"},{url:"C",value:"C"}];
 const DropDownMenu = [{url:"/Aythorize",value:"Авторизация"}]
 
 export default class App extends Component {
@@ -65,9 +66,9 @@ export default class App extends Component {
                 <Grid item
                 width={"100%"}>
                     <Routes>    
-                        <Route path="/*" element={<MainPage /> }/>
+                        <Route path="/*" element={<MainPage ChangeNavMenu={this.ChangeNavMenu} ChangeDropDownMenu={this.ChangeDropDownMenu}/> }/>
                         <Route path='/Aythorize' element={<Aythorize />}/>
-                        <Route path="/User/*" element={<ControllerGrid />}/>
+                        <Route path="/User/*" element={<ControllerGrid ChangeNavMenu={this.ChangeNavMenu} ChangeDropDownMenu={this.ChangeDropDownMenu}/>}/>
                         <Route path="/Admin/*" element={<AdminPage ChangeNavMenu={this.ChangeNavMenu} ChangeDropDownMenu={this.ChangeDropDownMenu}/>}/>
                     </Routes>
                 </Grid>

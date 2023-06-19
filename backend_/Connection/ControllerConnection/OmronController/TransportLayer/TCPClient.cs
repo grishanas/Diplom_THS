@@ -1,12 +1,16 @@
-﻿using System.Net;
+﻿using System;
+using System.Net;
+using System.Net.NetworkInformation;
 using System.Net.Sockets;
 
 namespace backend_.Connection.ControllerConnection.OmronController.TransportLayer
 {
     public class TCPClient:IControllerConnect
     {
-        public IPEndPoint _iPEndPoint { get; private set; }
-        private TcpClient client;
+        private IPEndPoint _iPEndPoint = null;
+        private Socket _socket = null;
+
+
 
         public override string ToString()
         {
@@ -31,43 +35,95 @@ namespace backend_.Connection.ControllerConnection.OmronController.TransportLaye
 
         public void SetIpAddress(UInt32 ipAddress, int port)
         {
-            this._iPEndPoint = new IPEndPoint(new IPAddress(ipAddress), port);
+            var tmp = new byte[4];
+            tmp[0] = (byte)(((int)ipAddress >> 24) & 0xff);
+            tmp[1] = (byte)(((int)ipAddress >> 16) & 0xff);
+            tmp[2] = (byte)(((int)ipAddress >> 8) & 0xff);
+            tmp[3] = (byte)(((int)ipAddress >> 0) & 0xff);
+
+            this._iPEndPoint = new IPEndPoint(new IPAddress(tmp), port);
         }
 
         public void Disconect()
         {
-            client.Close();
+           
 
         }
+
+        private Int32 _timeout = 2000;
 
         public bool Connect()
         {
-            client = new TcpClient();
-            client.Connect(_iPEndPoint);
-            return client.Connected;
+            this._socket = new Socket(_iPEndPoint.AddressFamily, SocketType.Stream, ProtocolType.Tcp);
+            this._socket.SendTimeout = this._timeout;
+            this._socket.ReceiveTimeout = this._timeout;
+
+            // try to connect
+            //
+            this._socket.Connect(this._iPEndPoint);
+
+            return this.Connected;
         }
+
+
+        public bool Connected
+        {
+            get { return (this._socket == null) ? false : this._socket.Connected; }
+        }
+
 
         public async Task<byte[]> ReadData(int lengthData)
         {
-            var responce = new byte[lengthData];
-            using (var networkStream = client.GetStream())
+            byte[] buffer = new byte[lengthData];
+            if (!this.Connected)
             {
-
-                await networkStream.ReadAsync(buffer, 0, lengthData);
-
+                throw new Exception("Socket is not connected.");
             }
-            return responce;
+            int bytesRecv = 0;
+            try
+            {
+                bytesRecv = this._socket.Receive(buffer, lengthData, SocketFlags.None);
+            }
+            catch(Exception e)
+            {
+                Console.WriteLine(buffer);
+                return new byte[lengthData];
+            }
+
+            // check the number of bytes received
+            //
+            if (bytesRecv != lengthData)
+            {
+                string msg = string.Format("Receiving error. (Expected: {0}  Received: {1})"
+                                            , lengthData, bytesRecv);
+                throw new Exception(msg);
+            }
+
+            return buffer;
         }
 
         public async Task WriteData(byte[] buffer,int length)
         {
-            using(var networkStream = client.GetStream())
+            if (!this.Connected)
             {
-                await networkStream.WriteAsync(buffer, 0, length);
+                throw new Exception("Socket is not connected.");
             }
 
+            // sends the command
+            //
+            int bytesSent = this._socket.Send(buffer, length, SocketFlags.None);
+
+            // it checks the number of bytes sent
+            //
+            if (bytesSent != length)
+            {
+                string msg = string.Format("Sending error. (Expected bytes: {0}  Sent: {1})"
+                                            , length, bytesSent);
+                throw new Exception(msg);
+            }
         }
 
-
     }
+
 }
+

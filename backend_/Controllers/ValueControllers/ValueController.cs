@@ -6,11 +6,13 @@ using Microsoft.AspNetCore.Authorization;
 using backend_.AuthorizationLogic;
 using backend_.DataBase.ControllerDB;
 using backend_.Models.controller;
+using Microsoft.AspNetCore.Authorization;
 
 namespace backend_.Controllers.ValueControllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class ValueController : ControllerBase
     {
         private readonly AuthorizationLogic.Authorization _authorization;
@@ -83,6 +85,24 @@ namespace backend_.Controllers.ValueControllers
 
 
 
+                    }
+                    else
+                    {
+
+                        var OutputGroupsDB = scope.ServiceProvider.GetService<GroupDBContext>();
+                        var outputsGroups = new List<backend_.Models.controllerGroup.ControllerOutputGroupUser>();
+                        foreach(var Role in user.userRoles)
+                        {
+                            outputsGroups.AddRange(await OutputGroupsDB.GetOutputGroups(Role.id));
+                        }
+                        var controllerDB = scope.ServiceProvider.GetService<ControllerDBContext>();
+                        var Outputs = new List<ControllerOutput>();
+
+                        foreach (var Group in outputsGroups)
+                        {
+                            Outputs.AddRange(await controllerDB.GetControllerOutputsWithOutputGroup(Group.id));
+                        }
+                        return Results.Ok(Outputs);
                     }
                 }
             }

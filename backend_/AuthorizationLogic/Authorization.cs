@@ -52,7 +52,7 @@ namespace backend_.AuthorizationLogic
             var claims = new List<Claim>();
             claims.Add(new Claim("userId", user.id.ToString()));
             claims.Add(new Claim("userLogin", user.login.ToString()));
-            if(user.userRoles.Where(x=>x.description=="Admin")!=null)
+            if(user.userRoles.FirstOrDefault(x=>x.description=="Admin")!=null)
             {
                 claims.Add(new Claim(ClaimTypes.Role, "Admin"));
                 Role.Role = "Admin";

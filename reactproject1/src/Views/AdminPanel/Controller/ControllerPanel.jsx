@@ -32,7 +32,7 @@ class SelectRender extends React.Component
     {
         
         let parts=ip.split(".");
-        let res=0;
+        let res= new Uint32Array(4);
 
         if(parts.length!=4)
             return null;
@@ -230,8 +230,13 @@ class ControllerPanel extends React.Component
 
     GetControllerQuery(id,context)
     {
-        
+        console.log(context);
         return <QeuryRoute id={id} context={context}/>
+    }
+
+    DeleteController(id,context)
+    {
+        return <Button>Удалить контроллер</Button>
     }
 
     constructor(props)
@@ -252,7 +257,7 @@ class ControllerPanel extends React.Component
                 maxWidth: 150,
                 cellRenderer:PopUpWindow,
                 cellRendererParams:{
-                    'PopUp':[this.AddControllerGroup,this.GetControllerQuery]
+                    'PopUp':[this.GetControllerQuery,this.DeleteController]
                 }},
                 { field: 'ID',
                 headerName:"IPV4",
@@ -311,7 +316,28 @@ class ControllerPanel extends React.Component
 
     async SendController()
     {
+       
+        let response = await this.state.Request.post("/api/Controller/AddController",{
+            "ipAddress": this.IPV4toInt(this.state.ip),
+            "description": this.state.ControllerOriginaldescription,
+            "ipPort": parseInt(this.state.ipPort),
+            "controllerState": this.state.ControllerState.description,
+            "name": this.state.ControllerOriginalName,
+            "controllerName": {
+              "name": this.state.ControllerName.name,
+              "version": this.state.ControllerVersion
+            }
+          }
+        )
 
+        switch(response.data.statusCode)
+        {
+            case 200:{
+                this.GetController();
+            }
+        }
+        
+        
     }
 
     IPV4toInt(ip)
@@ -439,6 +465,7 @@ class ControllerPanel extends React.Component
                 let data=[];
                 responce.data.value.forEach((e)=>{
                     let tmp = {};
+                    console.log(e);
                     tmp.description = e.description;
                     data.push(tmp);
                 })
@@ -472,7 +499,7 @@ class ControllerPanel extends React.Component
                                 animateRows={true}
                                 rowData={this.state.readyData}
                                 onGridReady={(e)=>{this.GetController()}}
-                                context={{"GetAllowedGroup":this.GetControllerGroup}}
+                                context={{"GetAllowedGroup":this.GetControllerGroup,'ChangeQeuryPanel':this.props.ChangeQeuryPanel}}
                             />
                         </div>
                      </Grid>
@@ -493,15 +520,19 @@ class ControllerPanel extends React.Component
                                     </FormLabel>
                                     <FormControl>
                                         <InputLabel>Адрес</InputLabel>
-                                        <Input/>
+                                        <Input onChange={(e)=>{this.setState({ip:e.target.value})}}/>
+                                    </FormControl>
+                                    <FormControl>
+                                        <InputLabel>Порт контроллера</InputLabel>
+                                        <Input onChange={(e)=>{this.setState({ipPort:e.target.value})}}/>
                                     </FormControl>
                                     <FormControl>
                                         <InputLabel>Имя</InputLabel>
-                                        <Input/>
+                                        <Input onChange={(e)=>{this.setState({ControllerOriginalName:e.target.value})}}/>
                                     </FormControl>
                                     <FormControl>
                                         <InputLabel>Описание</InputLabel>
-                                        <Input/>
+                                        <Input onChange={(e)=>{this.setState({ControllerOriginaldescription:e.target.value})}}/>
                                     </FormControl>
                                     <FormControl sx={{ m: 1, minWidth: 200 }}>
                                         <InputLabel>Производитель контроллера</InputLabel>
@@ -556,8 +587,8 @@ class ControllerPanel extends React.Component
                                         {this.state.controllerStates?
                                         this.state.controllerStates.map((e)=>(
                                             <MenuItem
-                                                key={e.description}
-                                                value={e.description}
+                                                key={e.id}
+                                                value={e}
                                             >
                                                 {e.description}
                                             </MenuItem>

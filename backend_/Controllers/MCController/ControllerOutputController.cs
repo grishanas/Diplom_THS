@@ -2,11 +2,13 @@
 using Microsoft.AspNetCore.Mvc;
 using backend_.Models.controller;
 using backend_.DataBase.ControllerDB;
+using Microsoft.AspNetCore.Authorization;
 
 namespace backend_.Controllers.MCController
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class ControllerOutputController: ControllerBase
     {
 
@@ -151,10 +153,10 @@ namespace backend_.Controllers.MCController
         {
             try
             {
-                var stateSet = controllers.SetOutputState(outputState.stateDescription, outputState.address, outputState.outputId);
+                var stateSet = controllers.SetOutputState(outputState.stateDescription, (UInt32)outputState.address, outputState.outputId);
                 if(stateSet)
                 {
-                    var output = await _controllerDB.GetControllerOutput(outputState.address, outputState.outputId);
+                    var output = await _controllerDB.GetControllerOutput((UInt32)outputState.address, outputState.outputId);
                     var state = await _controllerDB.GetOutputState(outputState.stateDescription);
                     if(state==null)
                     {
@@ -194,7 +196,7 @@ namespace backend_.Controllers.MCController
             try
             {
                 var item = controllers.GetAllCommands((UInt32)address);
-                return Results.Ok(item);
+                return Results.Json(item,statusCode:StatusCodes.Status200OK);
             }
             catch (Exception e)
             {
@@ -203,15 +205,26 @@ namespace backend_.Controllers.MCController
             return Results.Problem();
         }
 
+        public class ControllerOutputI
+        {
+            public int id { get; set; }
+
+            public int controllerAddress { get; set; }
+            public string name { get; set; }
+            public string description { get; set; }
+
+            public string state { get; set; }
+        }
+
         [HttpPost("Output")]
-        public async Task<IResult> AddOutput([FromBody]ControllerOutput output)
+        public async Task<IResult> AddOutput([FromBody] ControllerOutputI output)
         {
             try
             {
-                var res= await _controllerDB.AddControllerOutput(output);
+                var res = await _controllerDB.AddControllerOutput(new ControllerOutput() { id = output.id,controllerAddress= (UInt32)output.controllerAddress,name=output.name,description=output.description,outputState= new OutputState() { description=output.state} }) ;
                 if (res)
                 {
-                    res = controllers.SetCommand(output.controllerAddress, output.id, output.Query.query);
+                    res = controllers.SetCommand((UInt32)output.controllerAddress, output.id, null);     
                 }
                 else
                 {
@@ -223,7 +236,7 @@ namespace backend_.Controllers.MCController
                 }
                 else
                 {
-                    await _controllerDB.DeleteControllerOutput(output.controllerAddress, output.id);
+                    await _controllerDB.DeleteControllerOutput((UInt32)output.controllerAddress, output.id);
                     return Results.Problem();
                 }
 
@@ -253,11 +266,11 @@ namespace backend_.Controllers.MCController
         }
 
         [HttpGet("Outputs")]
-        public async Task<IResult> GetOutputs([FromQuery] UInt32 adrress)
+        public async Task<IResult> GetOutputs([FromQuery] int adrress)
         {
             try
             {
-                var res = await _controllerDB.GetControllerOutputs(adrress);
+                var res = await _controllerDB.GetControllerOutputs((UInt32)adrress);
                 foreach(var item in res)
                 {
                     item.outputState.controllers = null;

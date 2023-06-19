@@ -50,7 +50,7 @@ class OutputsRender extends React.Component
         let diffrent = this.state.Groups.filter(i=>!Groups.includes(i))
         .concat(Groups.filter(i=>!this.state.Groups.includes(i)));
         console.log(diffrent);  
-        let response =  await this.state.Request.delete("/  api/Group/OutputGroupRole",{
+        let response =  await this.state.Request.delete("/api/Group/OutputGroupRole",{
             data:{
                 roleId:this.props.data.id,
                 groupId:diffrent[0].id,
@@ -74,7 +74,7 @@ class OutputsRender extends React.Component
     {
         console.log(Groups);
         console.log(this.props.data);
-        let response =  await this.state.Request.post("/api/Group/AddOutputGroupRole",
+        let response =  await this.state.Request.post("/api/Group/OutputGroupRole",
         {
             roleId:this.props.data.id,
             groupId:Groups[Groups.length-1].id

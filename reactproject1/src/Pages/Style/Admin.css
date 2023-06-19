@@ -1,0 +1,18 @@
+
+
+
+.AdminMainPaper{
+    display: flex;
+    margin: auto;
+    align-items: center;
+    justify-content: center;
+    height: 200pt;
+    width:300pt;
+}
+
+
+.AdminContainer{
+
+    display: flex;
+    flex-direction: column;
+}

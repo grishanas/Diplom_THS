@@ -4,11 +4,13 @@ using backend_.Models.controller;
 using backend_.DataBase.ControllerDB;
 using backend_.Connection;
 using backend_.Connection.ControllerConnection;
+using Microsoft.AspNetCore.Authorization;
 
 namespace backend_.Controllers.MCController
 {
     [Route("api/[controller]")]
     [ApiController]
+    [Authorize]
     public class ControllerController : ControllerBase
     {
         private readonly ControllerDBContext _dbContext;

@@ -29,12 +29,6 @@ namespace backend_.Controllers.ValueControllers
 
 
         }
-        public async Task Send(OutputValue value)
-        {
-
-
-/*            await this.Clients.All.SendAsync("Receive", value);*/
-        }
 
         private async void AddToGroup(string connectionId, OutputId output)
         {
@@ -65,27 +59,27 @@ namespace backend_.Controllers.ValueControllers
                         }
                         ); 
                     });
-                    //await Groups.AddToGroupAsync();
                 }
                 else
                 {
 
-                    var RoleDB = scope.ServiceProvider.GetService<ControllerGroupDBContext>();
-
-                    List<Models.controllerGroup.ControllerOutputGroupUser> Groups = new List<Models.controllerGroup.ControllerOutputGroupUser>();
-                    foreach (var item in user.userRoles)
+                    var OutputGroupsDB = scope.ServiceProvider.GetService<GroupDBContext>();
+                    var outputsGroups = new List<backend_.Models.controllerGroup.ControllerOutputGroupUser>();
+                    foreach (var Role in user.userRoles)
                     {
-                        var OutputRoles = await RoleDB.GetOutputGroupsWithRole(item.id);
-                        Groups.AddRange(OutputRoles);
+                        outputsGroups.AddRange(await OutputGroupsDB.GetOutputGroups(Role.id));
                     }
+                    var controllerDB = scope.ServiceProvider.GetService<ControllerDBContext>();
+                    var Outputs = new List<ControllerOutput>();
 
-                    var ControllerDB = scope.ServiceProvider.GetService<ControllerDBContext>();
-                    foreach (var item in Groups)
+                    foreach (var Group in outputsGroups)
                     {
-                        var output = await ControllerDB.GetControolerOutputs(item.id);
+                        Outputs.AddRange(await controllerDB.GetControllerOutputsWithOutputGroup(Group.id));
                     }
-
-                    //return new List<ControllerOutput>();
+                    Outputs.ForEach(item =>
+                    {
+                        this.AddToGroup(Context.ConnectionId, new OutputId() { ip = item.controllerAddress, outputId = item.id });
+                    });
                 }
             }
 
